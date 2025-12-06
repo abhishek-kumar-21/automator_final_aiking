@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import ResumeUpload from "@/components/upload/ResumeUpload";
-import {toast} from "react-toastify"
+import { toast } from "react-toastify"
 
 export default function ResumeUploadPage() {
   const [jobTitle, setJobTitle] = useState('');
@@ -12,10 +12,10 @@ export default function ResumeUploadPage() {
   useEffect(() => {
     const isHRLoggedIn = localStorage.getItem("IsLoginAsHR");
     console.log(isHRLoggedIn)
-  
+
     if (isHRLoggedIn !== "true") {
       toast.warning("Access denied. Please log in as an HR user.");
-  
+
       setTimeout(() => {
         window.location.href = "/hr/login";
       }, 2000);
