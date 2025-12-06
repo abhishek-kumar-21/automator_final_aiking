@@ -8,11 +8,11 @@ export interface Candidate {
   score: number;
   parsedText: string;
   approved: boolean;
-
+  uploadedAt: string,
   skills: string[];           // List of skills extracted from the resume
   experience: number;         // Total years of experience extracted from the resume
   jobTitle: string;           // Job title extracted from the resume
-  education: string; 
+  education: string;
 }
 
 export type ParsedResume = {
