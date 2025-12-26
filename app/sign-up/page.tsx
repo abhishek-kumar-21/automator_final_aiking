@@ -7,6 +7,7 @@ import app from "@/firebase/config";
 import { getDatabase, ref, set } from "firebase/database";
 import axios from "axios";
 import Link from 'next/link';
+import SignInwithGoogle from "../loginwithgoogle/page";
 
 function Register() {
   const [email, setEmail] = useState("");
@@ -15,7 +16,7 @@ function Register() {
   const [lname, setLname] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleRegister = async (e) => {
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     const auth = getAuth();
@@ -42,7 +43,8 @@ function Register() {
         });
       }
     } catch (error) {
-      toast.error(error.message || "An unknown error occurred", { position: "bottom-center" });
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      toast.error(errorMessage, { position: "bottom-center" });
     } finally {
       setLoading(false);
     }
@@ -51,7 +53,7 @@ function Register() {
   return (
     <main className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#11011E] via-[#35013E] to-[#11011E] p-6">
       <div className="w-full max-w-md p-8 bg-[rgba(255,255,255,0.05)] rounded-2xl shadow-2xl border border-[rgba(255,255,255,0.1)]">
-        <h1 className="text-2xl font-semibold font-raleway text-[#ECF1F0] mb-text-2xl font-raleway font-semibold mb-6 text-center animate-slideDown text-[#ECF1F0]">Sign Up</h1>
+        <h1 className="text-2xl font-raleway mb-text-2xl font-raleway font-semibold mb-6 text-center animate-slideDown text-[#ECF1F0]">Sign Up</h1>
         <p className="text-gray-400 text-center mb-4">Achieve career success with Job Form Automator! Start auto-applying now!</p>
 
         <form onSubmit={handleRegister} className="space-y-4">
@@ -95,6 +97,12 @@ function Register() {
           >
             {loading ? "Signing up..." : "Sign up"}
           </button>
+
+          {/* Centered Google Sign-In Button */}
+          <div className="flex justify-center">
+            {/* <p className="text-sm text-[#B6B6B6]">Or continue with</p><br></br> */}
+            <SignInwithGoogle />
+          </div>
         </form>
 
         <p className="text-center text-gray-400 mt-4">
