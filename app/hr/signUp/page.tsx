@@ -7,6 +7,7 @@ import app from "@/firebase/config";
 import { getDatabase, ref, set } from "firebase/database";
 import axios from "axios";
 import Link from 'next/link';
+import SignInwithGoogle from "../loginwithGoogle/SignInWithGoogle";
 // import { checkEmailType } from "../utils/emailCheck"
 
 function Register() {
@@ -17,7 +18,7 @@ function Register() {
     const [loading, setLoading] = useState(false);
     const [emailError, setEmailError] = useState("");
 
-    const handleRegister = async (e) => {
+    const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         const auth = getAuth();
@@ -54,10 +55,10 @@ function Register() {
                 // Sign out to prevent immediate email verification check
                 await signOut(auth);
 
-    
             }
         } catch (error) {
-            toast.error(error.message || "An unknown error occurred", { position: "bottom-center" });
+            const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            toast.error(errorMessage, { position: "bottom-center" });
         } finally {
             setLoading(false);
         }
@@ -124,6 +125,12 @@ function Register() {
                     >
                         {loading ? "Signing up..." : "Sign up"}
                     </button>
+
+                    {/* Centered Google Sign-In Button */}
+                    <div className="flex justify-center">
+                        {/* <p className="text-sm text-[#B6B6B6]">Or continue with</p><br></br> */}
+                        <SignInwithGoogle />
+                    </div>
                 </form>
 
                 <p className="text-center text-gray-400 mt-4">
