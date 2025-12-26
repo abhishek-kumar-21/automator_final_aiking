@@ -55,10 +55,6 @@ const Resume: React.FC = () => {
     }
   }, [downloadUrl, pdfText]);
 
-
-
-
-
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -207,7 +203,7 @@ const Resume: React.FC = () => {
         console.error("Failed to extract/save marketing data:", err);
       }
 
-      setTimeout(() => { window.location.href = "/demo" }, 3000);
+      setTimeout(() => { window.location.href = "/course/jobdescription" }, 3000);
     } catch (err) {
       toast.error(
         err instanceof Error
@@ -224,7 +220,6 @@ const Resume: React.FC = () => {
     setPdfText("");
     setResume("");
   };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#11011E] via-[#35013E] to-[#11011E] px-4">
@@ -247,7 +242,7 @@ const Resume: React.FC = () => {
           </div>
         )}
         <div className="w-full md:w-2/3 p-6 rounded-lg shadow-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)]">
-          <h2 className="text-2xl font-semibold font-raleway text-[#ECF1F0] mb-text-2xl font-raleway font-semibold mb-6 text-center animate-slideDown text-[#ECF1F0]">
+          <h2 className="text-2xl font-raleway mb-text-2xl font-raleway font-semibold mb-6 text-center animate-slideDown text-[#ECF1F0]">
             Last Step
           </h2>
           {/* <p className="text-center text-gray-600 mb-4">
@@ -344,7 +339,7 @@ const Resume: React.FC = () => {
             <button
               ref={submitButtonRef}
               type="submit"
-              className="w-full py-2 bg-[#0FAE96] text-[#FFFFFF] rounded-md font-raleway font-medium text-base hover:opacity-90 bg-[#0FAE96] text-black px-4 py-2 rounded-md hover:bg-[#0FAE96]/80 transform transition duration-200 hover:scale-105 text-sm sm:text-base"
+              className="w-full font-raleway font-medium hover:opacity-90 bg-[#0FAE96] text-black px-4 py-2 rounded-md hover:bg-[#0FAE96]/80 transform transition duration-200 hover:scale-105 text-sm sm:text-base"
               disabled={isLoading}
             >
               Submit

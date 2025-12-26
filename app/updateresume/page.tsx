@@ -55,9 +55,6 @@ const Resume: React.FC = () => {
     }
   }, [downloadUrl, pdfText]);
 
-
-
-
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -124,7 +121,6 @@ const Resume: React.FC = () => {
       document.dispatchEvent(event);
     }
 
-
     if (!pdfName) {
       toast.error("Please Provide Your Resume Before Submitting!");
       return;
@@ -183,9 +179,6 @@ const Resume: React.FC = () => {
         window.location.href = "/"
       }, 1000)
 
-
-
-
     } catch (err) {
       toast.error(
         err instanceof Error
@@ -194,7 +187,6 @@ const Resume: React.FC = () => {
       );
     }
   };
-
 
   const handleRemovePdf = () => {
     setPdf(null);
@@ -225,7 +217,7 @@ const Resume: React.FC = () => {
           </div>
         )}
         <div className="w-full md:w-2/3 p-6 rounded-lg shadow-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)]">
-          <h2 className="text-2xl font-semibold font-raleway text-[#ECF1F0] mb-text-2xl font-raleway font-semibold mb-6 text-center animate-slideDown text-[#ECF1F0]">
+          <h2 className="text-2xl font-raleway mb-text-2xl font-raleway font-semibold mb-6 text-center animate-slideDown text-[#ECF1F0]">
             Update Your Details
           </h2>
           {/* <p className="text-center text-gray-600 mb-4">
