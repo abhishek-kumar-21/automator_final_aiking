@@ -32,6 +32,17 @@ body {
   /* Chrome, Safari, and Opera */
 }
 
+.scroll-bar::-webkit-scrollbar{
+  width: 7px;
+  background-color: transparent;
+}
+
+.scroll-bar::-webkit-scrollbar-thumb {
+  width: 7px;
+  background-color: #ffffff;
+  border-radius: 7px;
+}
+
 /* Mic Animation Styles */
 /* Mic Animation Styles */
 .mic-animation {
