@@ -78,7 +78,7 @@ export default function ExperienceInput() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <MdWork className="text-2xl text-white drop-shadow-glow" />
-          <h2 className="text-2xl font-extrabold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent animate-pulse">
+          <h2 className="text-2xl font-extrabold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
             Experience
           </h2>
         </div>

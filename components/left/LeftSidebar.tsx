@@ -15,7 +15,7 @@ import LanguageInput from "./sections/LanguageInput";
 
 /* -------------------- Repeated Styles Optimized -------------------- */
 const labelClass =
-  "block text-xs sm:text-sm font-medium mb-2 font-roboto bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent animate-pulse text-text-subtitle tracking-tight uppercase";
+  "block text-xs sm:text-sm font-medium mb-2 font-roboto bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent text-text-subtitle tracking-tight uppercase";
 
 const imgInputClass =
   "w-full p-3 pl-10 text-sm sm:text-base border border-[rgba(255,255,255,0.1)] rounded-xl " +
