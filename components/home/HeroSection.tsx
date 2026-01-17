@@ -1,139 +1,172 @@
-/** @format */
-"use client";
-// Removed import Image from "next/image"; as 'next/image' is not available in this environment.
-import React, { useState, useEffect } from "react";
-import AiSuccessPath from "@/components/home/Aisuccesspath"; // Assuming this component handles its own responsiveness
+'use client';
 
+import React, { useState } from 'react';
+import Image from 'next/image';
+import { Play, TrendingUp, FastForward, Users, X } from 'lucide-react';
+import { Playfair_Display, Inter, Caveat } from 'next/font/google';
+import Link from 'next/link';
 
-// Assuming AiSuccessPath is a responsive component or its content adapts to container size
-// import AiSuccessPath from "@/components/AiSuccessPath"; // This import path is external, assuming it's handled by the user's setup.
-// Removed Firebase imports as they are commented out and not used in the render logic.
-// import { get, ref, getDatabase, update, set } from "firebase/database";
-// import { app, auth } from "@/firebase/config";
-// const db = getDatabase(app);
+const serifFont = Playfair_Display({ 
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  variable: '--font-serif',
+});
 
-function HeroSection() {
-  // const [uid,setUid] = useState("");
-  // useEffect(()=>{
-  //   let uid = auth?.currentUser?.uid;
-  //   if(uid){
-  //     setUid(uid)
-  //   }
-  // },[])
-  // useEffect(()=>{
-  //   let subRef = (db,`user/${uid}`)
-  // })
+const sansFont = Inter({ 
+  subsets: ['latin'], 
+  variable: '--font-sans',
+});
+
+const scriptFont = Caveat({ 
+  subsets: ['latin'],
+  weight: ['700'],
+  variable: '--font-script',
+});
+
+const HeroSection = () => {
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
+
   return (
-    <div className="relative bg-[#11011E] pt-4 px-4 sm:px-6 md:px-8 overflow-hidden font-inter">
-      {/* Blurred Accent Elements */}
-      <div className="absolute top-0 left-0 w-1/2 max-w-[200px] h-[200px] bg-[#90e6d959] opacity-40 blur-[80px] sm:blur-[100px] md:blur-[120px]"></div>
-      <div className="absolute top-0 right-0 w-1/2 max-w-[200px] h-[200px] bg-[#90e6d959] opacity-40 blur-[80px] sm:blur-[100px] md:blur-[120px]"></div>
+    <section className={`
+      ${serifFont.variable} ${sansFont.variable} ${scriptFont.variable} 
+      relative w-full max-w-[100vw] bg-white font-sans
+      overflow-x-hidden 
+    `}>
+      {/* Background Decor */}
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-50/50 to-white -z-10" />
 
-      {/* Main Flex Row */}
-      <div className="flex flex-col lg:flex-row items-start gap-8 justify-between max-w-7xl mx-auto relative z-10 py-8">
-        {/* LEFT SIDE */}
-        <div className="w-full pt-6 lg:w-1/2 text-left space-y-6">
-          {/* Star Rating */}
-          <div className="flex justify-start items-center mb-4">
-            <span className="flex items-center bg-[#FFFFFF05] border border-[#ffffff17] px-3 py-1 rounded-full">
-              {Array(5)
-                .fill(null)
-                .map((_, index) => (
-                  // Replaced Next.js Image component with standard <img> tag
-                  <img
-                    key={index}
-                    src="/images/star.png" // Placeholder for star image
-                    alt="Star"
-                    className="w-3 h-3 mr-1"
-                    onError={(e) => {
-                      e.currentTarget.src = "https://placehold.co/12x12/B6B6B6/000000?text=X"; // Fallback
-                    }}
-                  />
-                ))}
-              <span className="font-roboto text-[#B6B6B6] text-xs sm:text-sm ml-1">
-                5 star rated
+      {/* Main Container */}
+      <div className="w-full pt-4 pb-12 lg:pt-0 lg:pb-0 relative min-h-[600px] lg:h-[800px] flex items-center">
+        
+        <div className="flex flex-col lg:flex-row items-center w-full h-full">
+          
+          {/* --- LEFT COLUMN: Content --- */}
+          <div className="w-full lg:w-[45%] flex flex-col gap-8 z-10 px-6 sm:px-8 lg:px-0 lg:pl-16 xl:pl-32 py-12 lg:py-0">
+            
+            {/* Headline */}
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-serif text-gray-900 leading-[1.1]">
+              Skill Up. <br />
+              Get Hired. 
+              <span className="relative ml-3 inline-block">
+                <span className="font-script text-blue-600 relative z-10 transform -rotate-2 inline-block">
+                  Faster
+                </span>
+                <svg 
+                  className="absolute left-0 bottom-[-10px] w-full h-4 text-blue-600 -z-0" 
+                  viewBox="0 0 100 10" 
+                  preserveAspectRatio="none"
+                >
+                  <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="none" />
+                  <path d="M5 8 Q 50 12 95 8" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.6" />
+                </svg>
               </span>
-            </span>
-          </div>
-
-          {/* Main Heading */}
-          <div className="flex flex-col items-start justify-center gap-6 w-full text-left">
-            {/* Removed whitespace-nowrap from h1 */}
-            <h1 className="font-raleway font-bold text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight mb-2">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0FAE96] to-cyan-400">
-                World’s{" "}
-              </span>
-              most advanced <span></span>
-              {/* Removed whitespace-nowrap and <br className="sm:hidden" /> from this span */}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0FAE96] to-cyan-400">
-                AI Career System.
-              </span>🚀
             </h1>
 
-            {/* Features List */}
-            <ul className="space-y-4 text-base sm:text-lg md:text-xl font-bold font-roboto mb-2">
-              <li className="flex items-center gap-3 text-[#B6B6B6]">
-                <span className="inline-flex items-center justify-center w-7 h-7 rounded">
-                  {/* SVG for Apply faster icon */}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="#ffffff"><path d="M18.4 445c11.2 5.3 24.5 3.6 34.1-4.4L224 297.7 224 416c0 12.4 7.2 23.7 18.4 29s24.5 3.6 34.1-4.4L448 297.7 448 416c0 17.7 14.3 32 32 32s32-14.3 32-32l0-320c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 118.3L276.5 71.4c-9.5-7.9-22.8-9.7-34.1-4.4S224 83.6 224 96l0 118.3L52.5 71.4c-9.5-7.9-22.8-9.7-34.1-4.4S0 83.6 0 96L0 416c0 12.4 7.2 23.7 18.4 29z"/></svg>
-                             </span>
-                Apply faster
-              </li>
-              <li className="flex items-center gap-3 text-[#B6B6B6]">
-                <span className="inline-flex items-center justify-center w-7 h-7 rounded ">
-                  {/* SVG for Get more interviews icon */}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" fill="#ffffff"><path d="M72 88a56 56 0 1 1 112 0A56 56 0 1 1 72 88zM64 245.7C54 256.9 48 271.8 48 288s6 31.1 16 42.3l0-84.7zm144.4-49.3C178.7 222.7 160 261.2 160 304c0 34.3 12 65.8 32 90.5l0 21.5c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32-14.3-32-32l0-26.8C26.2 371.2 0 332.7 0 288c0-61.9 50.1-112 112-112l32 0c24 0 46.2 7.5 64.4 20.3zM448 416l0-21.5c20-24.7 32-56.2 32-90.5c0-42.8-18.7-81.3-48.4-107.7C449.8 183.5 472 176 496 176l32 0c61.9 0 112 50.1 112 112c0 44.7-26.2 83.2-64 101.2l0 26.8c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32-14.3-32-32zm8-328a56 56 0 1 1 112 0A56 56 0 1 1 456 88zM576 245.7l0 84.7c10-11.3 16-26.1 16-42.3s-6-31.1-16-42.3zM320 32a64 64 0 1 1 0 128 64 64 0 1 1 0-128zM240 304c0 16.2 6 31 16 42.3l0-84.7c-10 11.3-16 26.1-16 42.3zm144-42.3l0 84.7c10-11.3 16-26.1 16-42.3s-6-31.1-16-42.3zM448 304c0 44.7-26.2 83.2-64 101.2l0 42.8c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32-14.3-32-32l0-42.8c-37.8-18-64-56.5-64-101.2c0-61.9 50.1-112 112-112l32 0c61.9 0 112 50.1 112 112z"/></svg>
-                 </span>
-                Get more interviews
-              </li>
-              <li className="flex items-center gap-3 text-[#B6B6B6]">
-                <span className="inline-flex items-center justify-center w-7 h-7 rounded">
-                  {/* SVG for Grow skills icon */}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="#ffffff"><path d="M64 64c0-17.7-14.3-32-32-32S0 46.3 0 64L0 400c0 44.2 35.8 80 80 80l400 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L80 416c-8.8 0-16-7.2-16-16L64 64zm406.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L320 210.7l-57.4-57.4c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L240 221.3l57.4 57.4c12.5 12.5 32.8 12.5 45.3 0l128-128z"/></svg>    
+            {/* Subheadline */}
+            <p className="text-lg text-gray-600 leading-relaxed max-w-lg">
+              Learn the right skills, create a strong resume that helps
+              you get interview calls, practice interviews using AI, and
+              apply for jobs with AI
+            </p>
 
-                </span>
-                Grow skills
-              </li>
-            </ul>
-
-            {/* CTA Button */}
-            <a
-              href="https://chromewebstore.google.com/detail/jobform-automator-ai-auto/lknamgjmcmbfhcjjeicdndokedcmpbaa"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 sm:mt-6 inline-block bg-[#0FAE96] text-white font-roboto font-bold text-base px-8 py-3 rounded-full transition-transform duration-300 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0FAE96] min-h-[40px] text-center"
-              style={{
-                transition: "box-shadow 0.3s cubic-bezier(.4,0,.2,1), transform 0.3s cubic-bezier(.4,0,.2,1)"
-              }}
-              onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 0 32px 0 #0FAE9655")}
-              onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}
-            >
-              Get started - Try it for free
-            </a>
-
-            {/* Trust Avatars & Text */}
-            <div className="flex items-center gap-2 mt-4">
+            {/* Social Proof */}
+            <div className="flex items-center gap-4">
               <div className="flex -space-x-3">
-                {/* Replaced Image components with standard <img> tags */}
-                <img src="/images/Img1.png" alt="User avatar" className="w-8 h-8 rounded-full border-2 border-[#11011E]" onError={(e) => { e.currentTarget.src = "https://placehold.co/32x32/B6B6B6/000000?text=X"; }} />
-                <img src="/images/Img2.png" alt="User avatar" className="w-8 h-8 rounded-full border-2 border-[#11011E]" onError={(e) => { e.currentTarget.src = "https://placehold.co/32x32/B6B6B6/000000?text=X"; }} />
-                <img src="/images/Img3.png" alt="User avatar" className="w-8 h-8 rounded-full border-2 border-[#11011E]" onError={(e) => { e.currentTarget.src = "https://placehold.co/32x32/B6B6B6/000000?text=X"; }} />
-                <img src="/images/Img4.png" alt="User avatar" className="w-8 h-8 rounded-full border-2 border-[#11011E]" onError={(e) => { e.currentTarget.src = "https://placehold.co/32x32/B6B6B6/000000?text=X"; }} />
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white overflow-hidden relative">
+                    <Image 
+                      src={`https://randomuser.me/api/portraits/thumb/men/${20 + i}.jpg`} 
+                      alt="User" 
+                      fill 
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
               </div>
-              <span className="text-[#B6B6B6] text-sm font-roboto ml-2">
-                <span className="text-white font-bold">450+</span> JobSeekers using Jobform Automator.
-              </span>
+              <p className="text-sm font-medium text-gray-900">
+                <span className="font-bold">1000+</span> JobSeekers using Jobform Automator.
+              </p>
+            </div>
+
+            {/* CTA Buttons */}
+            {/* CHANGED: Removed max-w-md to prevent squeezing. Added whitespace-nowrap to buttons. */}
+            <div className="flex flex-col sm:flex-row gap-4 mt-2 w-full">
+              <Link href="/sign-up" className="w-full sm:w-auto">
+                <button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-8 rounded-lg shadow-lg shadow-blue-600/20 transition-all transform hover:scale-105 flex items-center justify-center whitespace-nowrap">
+                  Get started – Try it for free
+                </button>
+              </Link>
+
+              <button 
+                onClick={() => setIsVideoOpen(true)}
+                className="w-full sm:w-auto group flex items-center justify-center gap-2 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3.5 px-8 rounded-lg transition-all shadow-sm whitespace-nowrap"
+              >
+                <div className="w-6 h-6 rounded-full bg-gray-800 text-white flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                  <Play size={10} fill="currentColor" />
+                </div>
+                Watch Demo
+              </button>
+            </div>
+
+            {/* Features Footer */}
+            <div className="flex flex-wrap gap-6 text-sm font-semibold text-gray-800 pt-4">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                Grow Skills
+              </div>
+              <div className="flex items-center gap-2">
+                <FastForward className="w-5 h-5" />
+                Apply faster
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Get more interviews
+              </div>
             </div>
           </div>
+
+          {/* --- RIGHT COLUMN: Static Map Image --- */}
+          <div className="relative w-full lg:w-[55%] h-[400px] lg:h-full flex items-center justify-end">
+             <Image 
+               src="/images/map.svg"
+               alt="Worldwide Users Map"
+               fill
+               priority
+               className="object-contain lg:object-right" 
+               sizes="(max-width: 768px) 100vw, 60vw"
+             />
+          </div>
+
         </div>
-
-        {/* RIGHT SIDE */}
-
-                      <AiSuccessPath />
-        {/* END RIGHT SIDE */}
       </div>
-    </div>
+
+      {/* --- VIDEO MODAL OVERLAY --- */}
+      {isVideoOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity"
+            onClick={() => setIsVideoOpen(false)}
+          />
+          <div className="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border-4">
+            <button 
+              onClick={() => setIsVideoOpen(false)}
+              className="absolute top-4 right-4 z-50 p-2 bg-black/50 hover:bg-white/20 text-white rounded-full backdrop-blur-sm transition-all"
+            >
+              <X size={24} />
+            </button>
+            <iframe
+              className="w-full h-full relative z-10"
+              src="https://www.youtube.com/embed/wH5qO0f-kKA?rel=0&autoplay=1"
+              title="Demo Video"
+              frameBorder="0"
+              allow="accelerometer; clipboard-write; autoplay; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
+    </section>
   );
-}
+};
 
 export default HeroSection;

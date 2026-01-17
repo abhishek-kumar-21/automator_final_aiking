@@ -219,22 +219,19 @@ function SignInwithGoogle() {
     <div className="flex justify-center">
       <button
         type="button"
-        className="w-full flex items-center justify-center bg-[#1A1A2E] border border-gray-600 text-white p-3 rounded-lg hover:bg-[#0FAE96] transition"
+        className="w-full flex items-center justify-center bg-[#F3F4F6] text-gray-700 p-3 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium"
         onClick={googleLogin}
       >
         <Image
           src={google}
           alt="Google icon"
-          style={{
-            width: '24px',
-            height: '24px',
-            marginRight: '12px'
-          }}
+          width={20} 
+          height={20}
+          className="mr-3"
         />
         Sign in with Google
       </button>
     </div>
-
   );
 }
 

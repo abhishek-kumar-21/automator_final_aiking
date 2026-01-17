@@ -1,6 +1,7 @@
 "use client";
 
 import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./global.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -13,6 +14,8 @@ import { Sonner } from "@/components/ui/sonnerCourse";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { TanstackProvider } from "@/components/providers/TanstackProvider";
 import NextTopLoader from "nextjs-toploader";
+
+const inter = Inter({ subsets: ["latin"] });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +39,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" className="bg-[#11011E]">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${inter.className} antialiased`}>
         <NextTopLoader
           color="#0FAE96"
           showSpinner={false}

@@ -1,87 +1,98 @@
-import Image from 'next/image';
+/** @format */
+import Image from "next/image";
+import { FaLinkedin } from "react-icons/fa"; // Importing FontAwesome Icon for cleaner look
 
 interface TeamCardProps {
   name: string;
   role: string;
   linkedin: string;
-  img : string;
-
+  img: string;
 }
 
-const TeamCard = ({ name, role, linkedin,img }: TeamCardProps) => (
-  <div className="rounded-[24px] text-center pb-8 border border-white/10 bg-white/5 animate-fade-in-up p-6">
-    <div className="relative w-32 h-32 mx-auto">
-      <Image
-        src={img} 
-        alt={linkedin} 
-        fill
-        sizes="(max-width: 768px) 100px, 128px"
-        className="rounded-full object-cover"
-        priority
-      />
-    </div>
-    <h3 className="mt-4 text-lg sm:text-xl font-raleway font-semibold text-[#ECF1F0]">{name}</h3>
-    <p className="text-sm sm:text-base text-[#B6B6B6] font-roboto">{role}</p>
-    <div className="flex justify-center gap-4 mt-4">
-      <a 
-        href={linkedin} 
-        target="_blank" 
-        rel="noreferrer"
-        className="relative w-8 h-8 sm:w-10 sm:h-10"
-      >
-        <Image 
-          src="/images/linkedin-icon.png" 
-          alt="LinkedIn" 
+const TeamCard = ({ name, role, linkedin, img }: TeamCardProps) => (
+  <div className="bg-[#F0F6FF] rounded-[32px] p-8 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group">
+    <div className="relative w-24 h-24 mx-auto mb-6">
+      <div className="relative w-full h-full rounded-full overflow-hidden border-4 border-white shadow-sm">
+        <Image
+          src={img}
+          alt={name}
           fill
-          sizes="(max-width: 768px) 32px, 40px"
-          className="object-contain"
+          className="object-cover"
+          priority
         />
-      </a>
+      </div>
+    </div>
+    
+    <h3 className="text-xl font-bold text-gray-900 mb-1 font-raleway">
+      {name}
+    </h3>
+    
+    <p className="text-sm text-gray-600 font-roboto mb-4">
+      {role}
+    </p>
 
+    <div className="flex justify-center">
+      <a
+        href={linkedin}
+        target="_blank"
+        rel="noreferrer"
+        className="text-gray-800 hover:text-[#0077b5] transition-colors duration-200"
+      >
+        <FaLinkedin size={28} />
+      </a>
     </div>
   </div>
 );
 
 export default function OurTeam() {
   return (
-    <main className="relative overflow-hidden min-h-screen flex flex-col items-center justify-center py-[60px] px-6 lg:px-[90px] text-white bg-gradient-to-b from-[#11011E] via-[#35013e] to-[#11011E]">
-      {/* Accent Blur Elements */}
-      <div className="absolute top-[-150px] left-[-150px] w-96 h-96 bg-[#90e6d9a9] opacity-40 blur-[200px]"></div>
-      <div className="absolute bottom-[-150px] right-[-150px] w-96 h-96 bg-[#90e6d9a9] opacity-40 blur-[200px]"></div>
+    <main className="relative overflow-hidden w-full bg-white py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
+      
+      {/* Decorative Blur Background (Optional - keep subtle if needed, removed for pure white look based on image) */}
+      <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-blue-50 to-transparent -z-10"></div>
 
-      <section className="text-center max-w-5xl mb-16 animate-fade-in-up">
-        <h1 className="text-2xl lg:text-4xl font-bold font-raleway text-[#ECF1F0]">Jobform Automator’s Mission</h1>
-        <p className="mt-4 text-sm sm:text-base lg:text-lg text-[#B6B6B6] font-roboto">
-          Job Form Automator revolutionizes job applications with AI-powered automation. We empower job seekers to apply to thousands
-          of positions on platforms like LinkedIn, Indeed, and Monster efficiently. Our tool auto-fills forms, reduces errors, and saves
-          time, providing a seamless experience. Committed to innovation, we help users achieve their career goals faster and more
-          effectively.
-        </p>
-      </section>
+      <div className="max-w-7xl mx-auto">
+        {/* Mission Section */}
+        <section className="text-center max-w-4xl mx-auto mb-20">
+          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 font-raleway mb-6">
+            Jobform Automator’s Mission
+          </h1>
+          <p className="text-base lg:text-lg text-gray-600 leading-relaxed font-roboto">
+            Job Form Automator revolutionizes job applications with AI-powered automation. We empower job seekers to apply to thousands
+            of positions on platforms like LinkedIn, Indeed, and Monster efficiently. Our tool auto-fills forms, reduces errors, and saves
+            time, providing a seamless experience. Committed to innovation, we help users achieve their career goals faster and more
+            effectively.
+          </p>
+        </section>
 
-      <section className="w-full max-w-6xl">
-        <h2 className="text-xl sm:text-2xl font-semibold text-center mb-8 animate-fade-in-up font-raleway text-[#ECF1F0]">Meet our team</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-4 sm:px-0">
-          <TeamCard
-            name="Saurabh Belote"
-            role="CEO & Founder"
-            linkedin="https://www.linkedin.com/in/saurabh-belote/" 
-            img="/images/image.png"        />
-          <TeamCard
-            name="Suman Bera"
-            role="Lead Product Engineer"
-            linkedin="https://www.linkedin.com/in/suman-bera-816642191/"
-            img="/images/image.png"
-          />
-          <TeamCard
-            name="Pawan Kumar"
-            role="Software Developer"
-            linkedin="https://www.linkedin.com/in/pawan-yadav-022b76266/"
-            img="/images/image.png"
-           
-          />
-        </div>
-      </section>
+        {/* Team Section */}
+        <section>
+          <h2 className="text-2xl lg:text-3xl font-bold text-center text-gray-900 mb-12 font-raleway">
+            Meet our team
+          </h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 max-w-5xl mx-auto">
+            <TeamCard
+              name="Saurabh Belote"
+              role="CEO & Founder"
+              linkedin="https://www.linkedin.com/in/saurabh-belote/"
+              img="/images/image.png"
+            />
+            <TeamCard
+              name="Suman Bera"
+              role="Lead Product Engineer"
+              linkedin="https://www.linkedin.com/in/suman-bera-816642191/"
+              img="/images/image.png"
+            />
+            <TeamCard
+              name="Pawan Kumar"
+              role="Software Developer"
+              linkedin="https://www.linkedin.com/in/pawan-yadav-022b76266/"
+              img="/images/image.png"
+            />
+          </div>
+        </section>
+      </div>
     </main>
   );
 }

@@ -2,30 +2,30 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { Clock, Brain, User, ShieldCheck } from "lucide-react"; // Clean vector icons to match the design
 
 const ValuesSection = () => {
   const values = [
     {
-      icon: "/images/clock.png",
+      icon: Clock,
       title: "Efficiency",
       description:
         "We prioritize time-saving automation to help users apply for jobs quickly and effortlessly, allowing them to focus on what truly matters.",
     },
     {
-      icon: "/images/brain.png",
+      icon: Brain,
       title: "Innovation",
       description:
         "We constantly push the boundaries of AI technology to enhance our platform, ensuring it remains at the forefront of job application automation.",
     },
     {
-      icon: "/images/userIcon.png",
+      icon: User,
       title: "User-Centricity",
       description:
         "Our users are at the heart of everything we do. We design our tool to be intuitive, reliable, and tailored to meet the diverse needs of job seekers worldwide.",
     },
     {
-      icon: "/images/privacy.png",
+      icon: ShieldCheck,
       title: "Integrity",
       description:
         "We are committed to maintaining transparency, trust, and ethical practices in all our operations, ensuring that our users can rely on us for a fair and honest experience.",
@@ -49,7 +49,7 @@ const ValuesSection = () => {
           }
         });
       },
-      { threshold: 0.2 }
+      { threshold: 0.1 }
     );
 
     valueRefs.current.forEach((card) => card && observer.observe(card));
@@ -60,34 +60,36 @@ const ValuesSection = () => {
   }, []);
 
   return (
-    <section className="py-12 px-4 sm:px-6 md:px-10 lg:px-20 bg-[#11011E] text-white overflow-x-hidden">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-center text-2xl sm:text-3xl md:text-4xl font-bold mb-10 sm:mb-12">
+        
+        {/* Header */}
+        <h2 className="text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-16">
           Our Values
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {values.map((value, index) => (
             <div
               key={index}
               ref={(el) => (valueRefs.current[index] = el)}
-              className={`bg-[#1A1125] border border-[#ffffff17] backdrop-blur-lg p-5 sm:p-6 md:p-8 rounded-2xl shadow-md transition-all duration-700 ease-out transform hover:-translate-y-1 hover:shadow-xl ${
-                isInView[index] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+              className={`bg-[#F5F9FF] p-8 rounded-[32px] text-center transition-all duration-700 ease-out transform hover:-translate-y-2 hover:shadow-lg ${
+                isInView[index] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
               }`}
             >
-              <div className="w-14 h-14 sm:w-16 sm:h-16 flex justify-center items-center bg-[#2C223B] rounded-full mb-4 sm:mb-6 mx-auto">
-                <Image
-                  src={value.icon}
-                  alt={value.title}
-                  width={32}
-                  height={32}
-                  className="w-8 h-8"
-                  priority
-                />
+              {/* Icon Circle */}
+              <div className="w-20 h-20 mx-auto bg-[#DDE8FA] rounded-full flex items-center justify-center mb-6">
+                <value.icon className="w-10 h-10 text-[#185BC3]" strokeWidth={1.5} />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-center">
+
+              {/* Title */}
+              <h3 className="text-xl font-bold text-[#185BC3] mb-4">
                 {value.title}
               </h3>
-              <p className="text-sm sm:text-base text-gray-300 text-center leading-relaxed">
+
+              {/* Description */}
+              <p className="text-sm sm:text-base text-gray-700 leading-relaxed font-medium">
                 {value.description}
               </p>
             </div>

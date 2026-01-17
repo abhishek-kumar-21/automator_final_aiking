@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CheckCircle } from "lucide-react";
-
+import Image from "next/image";
 
 const ResumeATSChecker = () => {
   const elementRef = useRef(null);
@@ -11,10 +11,12 @@ const ResumeATSChecker = () => {
 
   // Animation sequence for benefits items
   const [animatedItems, setAnimatedItems] = useState([]);
+  
+  // Updated text to match the image exactly
   const benefits = [
-    { icon: CheckCircle, text: "Build an ATS-optimized resume in one click." },
-    { icon: CheckCircle, text: "Discover the skills you’re missing—and how to gain them." },
-    { icon: CheckCircle, text: "Scan your resume for hidden issues and fix them instantly with Us." }
+    { icon: CheckCircle, text: "Discover missing skills for your target role" },
+    { icon: CheckCircle, text: "Get a clear, guided skill-building path" },
+    { icon: CheckCircle, text: "Align your resume with in-demand skills" }
   ];
 
   useEffect(() => {
@@ -50,101 +52,110 @@ const ResumeATSChecker = () => {
         observer.unobserve(elementRef.current);
       }
     };
-  }, []);
+  }, [benefits]);
 
   const handleClick = function(){
     window.location.href = "/atsresume"
   }
 
   return (
-    <div className="px-4 sm:px-6 md:px-8 py-12 flex justify-center">
+    <div className="px-4 sm:px-6 md:px-8 py-16 flex justify-center bg-white">
       <div
         ref={elementRef}
-        className={`relative w-full max-w-6xl bg-gradient-to-br from-[#1A0B29] to-[#11011E] text-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-700 ease-out ${isInView
+        className={`relative w-full max-w-7xl bg-[#F4F8FC] rounded-[32px] overflow-hidden transition-all duration-700 ease-out ${
+          isInView
             ? "transform translate-y-0 opacity-100"
             : "transform translate-y-10 opacity-0"
-          }`}
+        }`}
       >
-        {/* Decorative background elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#0FAE96] opacity-5 rounded-full transform translate-x-1/3 -translate-y-1/3 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500 opacity-5 rounded-full transform -translate-x-1/3 translate-y-1/3 blur-3xl"></div>
-
-
-        <div className="flex flex-col lg:flex-row justify-between items-center px-6 sm:px-8 md:px-12 py-8 md:py-10 border border-[#ffffff15] rounded-2xl backdrop-blur-sm">
-          {/* Content Section */}
-          <div className="text-center lg:text-left max-w-xl">
-            <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-            Bad Resume. Gaps in Skills. <span className="text-[#0FAE96]">Still Rejected?</span>
+        <div className="flex flex-col lg:flex-row justify-between items-center px-6 sm:px-12 md:px-16 py-12 md:py-16">
+          
+          {/* LEFT SIDE: Content Section */}
+          {/* CHANGED: Removed 'text-center' so it aligns left on all screens */}
+          <div className="text-left max-w-2xl w-full">
+            <h3 className="text-3xl sm:text-4xl md:text-[40px] font-bold text-gray-900 leading-[1.2]">
+              Skill gaps holding you back? <br className="hidden sm:block" />
+              Build skills that <span className="text-[#185BC3]">get you hired.</span>
             </h3>
 
-            <p className="text-sm sm:text-base text-gray-300 mt-3 leading-relaxed">
-              Build a resume that passes filters. Gain the skills recruiters actually want. Get noticed.
+            {/* CHANGED: Removed 'mx-auto' to prevent centering on mobile */}
+            <p className="text-base sm:text-lg text-gray-600 mt-6 leading-relaxed max-w-xl font-medium">
+              Identify your skill gaps, learn what recruiters actually want, and build the right skills faster.
             </p>
 
-            {/* Benefits */}
-            <div className="mt-6 space-y-2.5">
+            {/* Benefits List */}
+            <div className="mt-8 space-y-4">
               {benefits.map((benefit, index) => (
                 <div
                   key={index}
-                  className={`flex items-center gap-2 transition-all duration-500 ${animatedItems.includes(index)
+                  // CHANGED: 
+                  // 1. Removed 'justify-center' so it aligns start on mobile.
+                  // 2. Changed 'items-center' to 'items-start' for better multiline alignment on small screens.
+                  className={`flex items-start gap-3 transition-all duration-500 justify-start ${
+                    animatedItems.includes(index)
                       ? "opacity-100 transform translate-x-0"
                       : "opacity-0 transform -translate-x-4"
-                    }`}
+                  }`}
                 >
-                  <benefit.icon className="text-[#0FAE96]" size={18} />
-                  <span className="text-sm sm:text-base text-gray-200">{benefit.text}</span>
+                  {/* Added mt-1 to align icon with the top of the text if text wraps */}
+                  <benefit.icon className="text-[#185BC3] shrink-0 mt-1" size={24} />
+                  <span className="text-base text-gray-800 font-medium">{benefit.text}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* CTA Section */}
-          <div className="mt-8 lg:mt-0 lg:ml-8 flex flex-col items-center">
-            <div className="bg-[#1D0F30] p-5 rounded-xl border border-[#ffffff10] shadow-lg mb-4 w-full max-w-xs">
-              <div className="text-center mb-2">
-                <span className="inline-block px-3 py-1 bg-[#0FAE96] bg-opacity-10 rounded-full text-[#0FAE96] text-xs font-medium mb-2">
+          {/* RIGHT SIDE: CTA Card */}
+          <div className="mt-12 lg:mt-0 lg:pl-12 w-full lg:w-auto flex justify-center lg:justify-end">
+            <div className="bg-[#DDE8FA] p-8 rounded-3xl border border-[#cbdcfc] shadow-sm w-full max-w-md">
+              
+              <div className="text-center mb-6">
+                <span className="inline-block px-4 py-1.5 bg-[#BFDBFE] border border-[#a5cbf5] text-gray-800 text-sm font-medium rounded-full mb-4">
                   It&apos;s Free!
                 </span>
-                <h4 className="text-lg font-semibold text-white">Know Where You Stand</h4>
+                <h4 className="text-2xl font-bold text-gray-900">Know Where You Stand</h4>
               </div>
 
               <button
-                className={`w-full bg-gradient-to-r from-[#0FAE96] to-[#0D9882] text-black font-semibold px-6 py-3 rounded-lg flex items-center justify-center gap-2 shadow-lg transform transition-all duration-300 ${isHovered ? "scale-[1.02]" : ""
-                  }`}
+                className={`w-full bg-[#185BC3] hover:bg-[#144ea8] text-white text-lg font-semibold px-6 py-4 rounded-xl flex items-center justify-center gap-2 shadow-md transform transition-all duration-300 ${
+                  isHovered ? "scale-[1.02] shadow-lg" : ""
+                }`}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 onClick={handleClick}
               >
                 <span>Start Now</span>
-                <ArrowRight size={18} className={`transition-transform duration-300 ${isHovered ? "transform translate-x-1" : ""}`} />
+                <ArrowRight size={20} className={`transition-transform duration-300 ${isHovered ? "transform translate-x-1" : ""}`} />
               </button>
 
-              <p className="text-xs text-center text-gray-400 mt-3">
+              <p className="text-xs text-center text-gray-600 mt-4 font-medium px-4">
                 Takes less than 5 minutes. Costs nothing. Could change everything.
               </p>
-            </div>
 
-            <div className="flex items-center gap-1.5">
-              <div className="flex -space-x-2">
-                {[...Array(4)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-6 h-6 rounded-full bg-gray-700 border-2 border-[#11011E] flex items-center justify-center text-[10px] overflow-hidden"
-                  >
-                    <img
-                      src={`/images/Img${i + 1}.png`}
-                      alt={`User avatar ${i + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
+              {/* Social Proof */}
+              <div className="flex items-center justify-center gap-3 mt-8">
+                <div className="flex -space-x-3">
+                  {[...Array(4)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-8 h-8 rounded-full border-2 border-[#DDE8FA] overflow-hidden"
+                    >
+                      <img
+                        src={`https://randomuser.me/api/portraits/thumb/men/${30 + i}.jpg`}
+                        alt={`User avatar ${i + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <p className="text-sm text-gray-800 font-bold">
+                  <span className="text-[#185BC3]">2,400+</span> scans today
+                </p>
               </div>
-
-              <p className="text-xs text-gray-400">
-                <span className="text-[#0FAE96] font-medium">2,400+</span> scans today
-              </p>
             </div>
           </div>
+
         </div>
       </div>
     </div>

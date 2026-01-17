@@ -1,3 +1,4 @@
+/** @format */
 "use client";
 import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState, useEffect } from "react";
@@ -6,11 +7,16 @@ import { toast } from "react-toastify";
 import { getDatabase, get, ref, set } from "firebase/database";
 import SignInwithGoogle from "../loginwithgoogle/page";
 import Link from 'next/link';
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import Eye Icons
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // State to toggle password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  
   const db = getDatabase(app);
 
   async function notifyExtensionOnLogin(uid: unknown) {
@@ -18,10 +24,10 @@ function Login() {
       console.log("Notifying extension of login");
       const event = new CustomEvent("userLoggedIn", { detail: { uid } });
       document.dispatchEvent(event);
-      return true; // Indicate successful dispatch
+      return true; 
     } catch (error) {
       console.error("Error notifying extension:", error);
-      throw error; // Rethrow to allow caller to handle
+      throw error; 
     }
   }
 
@@ -40,7 +46,7 @@ function Login() {
         }
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Ensure Firebase initializes
+      await new Promise((resolve) => setTimeout(resolve, 1000)); 
       const user = auth.currentUser;
 
       if (user && isLogin === "true") {
@@ -92,18 +98,17 @@ function Login() {
         };
         const referralCode = getReferralCodeFromCookie()
         console.log(referralCode, "code", typeof (referralCode))
+        
         //** SAVE REFERAL CODE IN DATABASE  */
         const currentDate = new Date();
         const formattedDateTime = currentDate.toISOString().replace("T", " ").split(".")[0];
-        const currentUser = auth?.currentUser?.uid;
-
+       
         if (referralCode) {
           console.log("Save in database/firebase")
           const newDocRef = ref(db, `/referrals/${referralCode}/${user.uid}`);
           console.log(newDocRef, typeof (newDocRef), "referrals");
           get(newDocRef).then((snapshot) => {
             if (!snapshot.exists()) {
-              // If the referral code doesn't exist, create a new entry
               set(newDocRef, {
                 signupDate: formattedDateTime,
                 amount: 0,
@@ -148,7 +153,6 @@ function Login() {
         toast.error("Email is not verified. Please verify your email and try again!", { position: "bottom-center" });
       }
     } catch (error) {
-
       const errorMessage = error instanceof Error ? error.message : "Login error";
       toast.error(errorMessage, { position: "bottom-center" });
     } finally {
@@ -157,44 +161,112 @@ function Login() {
   };
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#11011E] via-[#35013E] to-[#11011E] p-6">
-      <div className="w-full max-w-md p-8 bg-[rgba(255,255,255,0.05)] rounded-2xl shadow-2xl border border-[rgba(255,255,255,0.1)]">
-        <h1 className="text-2xl font-raleway font-semibold mb-6 text-center animate-slideDown text-[#ECF1F0]">Sign In</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-            className="w-full p-3 border border-gray-600 rounded-lg bg-[#1A1A2E] text-white focus:ring-2 focus:ring-[#0FAE96]"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
-            className="w-full p-3 border border-gray-600 rounded-lg bg-[#1A1A2E] text-white focus:ring-2 focus:ring-[#0FAE96]"
-          />
-          <div className="text-right">
-            <Link href="/passwordreset" className="text-[#0FAE96] hover:text-[#FF00C7] transition-colors duration-200">Forgot password?</Link>
+    <main className="flex items-center justify-center min-h-screen bg-white px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
+        
+        {/* Header Section */}
+        <div className="text-left">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            Welcome Back <span className="text-3xl">👋</span>
+          </h1>
+          <p className="mt-2 text-base text-gray-600 leading-relaxed">
+            Today is a new day. It&apos;s your day. You shape it.<br />
+            Register to shape your carrier and get hired in your dream jobs.
+          </p>
+        </div>
+
+        {/* Form Section */}
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          <div className="space-y-5">
+            
+            {/* Email Field */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder="Example@email.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F9FAFB] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              />
+            </div>
+
+            {/* Password Field with Toggle */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  // Dynamic type based on state
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="at least 8 characters"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                  // Added pr-10 to prevent text overlap with icon
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F9FAFB] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+                >
+                  {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                </button>
+              </div>
+            </div>
           </div>
-          <button type="submit" disabled={loading} className="w-full bg-[#0FAE96] text-white p-3 rounded-lg hover:opacity-90 transition duration-300 transform hover:scale-105">
+
+          {/* Forgot Password Link */}
+          <div className="flex items-center justify-end">
+            <Link 
+              href="/passwordreset" 
+              className="text-sm font-medium text-blue-600 hover:text-blue-500"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+
+          {/* Sign In Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#1D4ED8] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+          >
             {loading ? "Signing in..." : "Sign in"}
           </button>
 
-          {/* Centered Google Sign-In Button */}
-          <div className="flex justify-center">
-            {/* <p className="text-sm text-[#B6B6B6]">Or continue with</p><br></br> */}
-            <SignInwithGoogle />
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">Or</span>
+            </div>
           </div>
+
+          {/* Google Sign-In */}
+          <div className="w-full">
+             <SignInwithGoogle />
+          </div>
+
+          {/* Sign Up Link */}
+          <p className="mt-4 text-center text-sm text-gray-600">
+            Don&apos;t you have an account?{" "}
+            <Link href="/sign-up" className="font-medium text-blue-600 hover:text-blue-500">
+              Sign up
+            </Link>
+          </p>
         </form>
-        <p className="text-center text-gray-400 mt-4">
-          Don&apos;t have an account? <Link href="/sign-up" className="text-[#0FAE96] hover:text-[#FF00C7] transition-colors duration-200">Sign up</Link>
-        </p>
       </div>
     </main>
   );

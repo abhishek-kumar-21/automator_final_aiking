@@ -1,3 +1,4 @@
+import JobSeeker from "@/components/JobSeeker";
 import PrivacyBox from "@/components/privacy/PrivacyBox";
 import PrivacySection from "@/components/privacy/PrivacySection";
 
@@ -6,7 +7,7 @@ export default function Privacy() {
     <>
        <PrivacyBox/>
       <PrivacySection/>
-   
+      <JobSeeker/>
     </>
   );
 }

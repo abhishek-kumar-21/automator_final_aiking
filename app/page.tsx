@@ -12,6 +12,7 @@ import PricingSection from '@/components/pricing/PricingSection';
 import TestimonialSection from "../components/home/TestimonialSection";
 import JobSeeker from "../components/JobSeeker";
 import VideoSection from "../components/home/video";
+import SequenceSection from "../components/home/SequenceSection";
 import WhatsAppButton from "@/components/WhatsAppButton";
 
 // ✅ Define proper type for params
@@ -34,10 +35,11 @@ export default function Mainpage({ params }: MainpageProps) {
   return (
     <div className='bg-[#11011E]'>
       <HeroSection />
-      <VideoSection />
+      {/* <VideoSection /> */}
       <CompaniesSection />
-      <HowItWorks />
+      <SequenceSection/>
       <FeaturesSection />
+      <HowItWorks />
       <PricingSection />
       <TestimonialSection />
       <ResumeATSChecker />

@@ -1,7 +1,9 @@
+/** @format */
 "use client";
 import React, { useState } from "react";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import { toast } from "react-toastify";
+import Link from "next/link"; // Better to use next/link for client-side routing
 
 const PasswordReset = () => {
   const [email, setEmail] = useState("");
@@ -23,31 +25,57 @@ const PasswordReset = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#11011E] to-[#1A022D] text-white px-4 sm:px-6 lg:px-[90px] py-12">
-      <div className="max-w-md w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6 sm:p-8 shadow-xl backdrop-blur-md transition-all hover:shadow-2xl">
-        <h1 className="text-3xl font-bold text-center text-[#ECF1F0] bg-clip-text bg-gradient-to-r from-[#0FAE96] to-[#FF00C7] animate-fade-in">Password Reset</h1>
-        <p className="text-sm text-gray-400 text-center mt-2">Enter your email below to receive a password reset link.</p>
+    // Main Container: White background
+    <div className="min-h-screen flex items-center justify-center bg-white px-4 py-12 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
         
-        <form onSubmit={handlePasswordReset} className="mt-6 space-y-4">
-          <input 
-            type="email" 
-            placeholder="Enter your email" 
-            required 
-            className="w-full p-4 rounded-lg bg-[rgba(255,255,255,0.03)] text-[#ECF1F0] border border-[rgba(255,255,255,0.1)] focus:ring-2 focus:ring-[#0FAE96] focus:outline-none placeholder-[#B6B6B6] disabled:opacity-50 transition-all duration-300"
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-          />
+        {/* Header Section matching the Sign-In Page style */}
+        <div className="text-left">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            Reset Password 🔒
+          </h1>
+          <p className="mt-2 text-base text-gray-600 leading-relaxed">
+            Enter your email below to receive a password reset link.
+          </p>
+        </div>
+        
+        {/* Form */}
+        <form onSubmit={handlePasswordReset} className="mt-8 space-y-6">
           
+          {/* Email Input */}
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input 
+              id="email"
+              type="email" 
+              placeholder="Enter your email" 
+              required 
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F9FAFB] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+          
+          {/* Submit Button */}
           <button 
             type="submit" 
             disabled={loading} 
-            className="w-full bg-gradient-to-r from-[#0FAE96] to-[#0FAE96] text-white font-semibold text-lg py-3 rounded-lg hover:from-[#0FAE96]/80 hover:to-[#0FAE96]/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105">
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#1D4ED8] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
             {loading ? "Sending..." : "Reset Password"}
           </button>
         </form>
 
+        {/* Back Link */}
         <div className="text-center mt-4">
-          <a href="/sign-in" className="text-[#0FAE96] hover:text-[#FF00C7] transition-colors duration-200">Back to Login</a>
+          <Link 
+            href="/sign-in" 
+            className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200"
+          >
+            Back to Login
+          </Link>
         </div>
       </div>
     </div>

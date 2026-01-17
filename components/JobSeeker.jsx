@@ -1,7 +1,7 @@
 /** @format */
 "use client";
 
-import Image from "next/image";
+import Link from "next/link";
 
 const JobSeeker = () => {
   const handleClick = function () {
@@ -13,45 +13,38 @@ const JobSeeker = () => {
   };
 
   return (
-    <section
-      className="relative m-4 md:m-8 lg:m-12 py-12 md:py-16 px-4 md:px-12 lg:px-16 text-white border-[1.5px] border-[#ffffff17] rounded-2xl overflow-hidden shadow-xl min-h-[40vh] bg-[#11011E]"
-    >
-      {/* Background */}
-      <div className="absolute inset-0">
-        <Image
-          className="absolute inset-0 object-cover object-center"
-          src="/images/JobSeeker.png"
-          alt="Background"
-          fill
-          priority
-        />
-        {/* Reduced overlay opacity from /70 to /30 to make the image more visible */}
-        <div className="absolute inset-0 bg-[#11011E]/30"></div>
-      </div>
+    <section className="py-20 sm:py-28 px-4 bg-white">
+      <div className="max-w-4xl mx-auto text-center">
+        
+        {/* Headline */}
+        <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+          Enjoy our <span className="text-blue-600">premium</span> benefits <br className="hidden sm:block" />
+          for <span className="text-blue-600">free</span>.
+        </h2>
 
-      {/* Content */}
-      <div className="relative z-10 max-w-2xl mx-auto text-center flex flex-col items-center justify-center min-h-[40vh]">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
-        Enjoy our premium benefits for free.
-        </h1>
-
-        <p className="text-sm md:text-base lg:text-lg text-gray-200 mb-6 max-w-xl px-4">
-        Refer your friends or share on LinkedIn to unlock premium rewards instantly.
+        {/* Subtext */}
+        <p className="text-lg text-gray-600 mb-10 max-w-2xl mx-auto">
+          Refer your friends or share on LinkedIn to unlock premium rewards instantly.
         </p>
 
-        <div>
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
-            className="group relative px-4 md:px-6 lg:px-8 py-2 md:py-3 bg-[#0FAE96] text-white font-semibold rounded-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105"
             onClick={handleClick}
+            className="w-full sm:w-auto px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors duration-200 shadow-sm"
           >
-            <span className="relative z-10">Get Started</span>
-            <div className="absolute inset-0 bg-emerald-500 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+            Get Started
           </button>
+          
+          {/* Contact Button (Added to match image) */}
+          <Link href="/contactUs" className="w-full sm:w-auto">
+            <button className="w-full px-8 py-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-colors duration-200">
+              Contact us
+            </button>
+          </Link>
         </div>
-      </div>
 
-      {/* Decorative Line */}
-      <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-[#0FAE96]/70 to-transparent"></div>
+      </div>
     </section>
   );
 };

@@ -1,7 +1,8 @@
 /** @format */
 "use client";
 import { useState } from "react";
-import { motion } from "framer-motion"; // For smooth animations
+import { motion, AnimatePresence } from "framer-motion"; 
+import { Plus } from "lucide-react"; // Using lucide-react for the clean plus icon
 
 const FAQSection = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -19,69 +20,70 @@ const FAQSection = () => {
     {
       question: "Can I customize the information that gets filled in?",
       answer:
-        "Yes, you can customize the information inside settings page in the Automator Site.",
+        "Yes, you can customize the information inside the settings page in the Automator Site.",
     },
     {
       question: "Is there a cost to use Jobform Automator?",
       answer:
-        "There are both free and premium plans available depending on your needs.",
+        "There are both free and premium plans available depending on your needs. You can start for free and upgrade as you grow.",
     },
     {
-      question:
-        "When can I expect to get hired using Jobform Automator?",
+      question: "When can I expect to get hired using Jobform Automator?",
       answer:
-        "The timeline depends on the job market and the positions you're applying for, but the tool significantly streamlines your application process.",
+        "The timeline depends on the job market and the positions you're applying for, but the tool significantly streamlines your application process, often reducing time-to-hire by 50%.",
     },
   ];
 
   return (
-    <section className="py-16 px-6 md:px-16 lg:px-20 text-white bg-[#11011E]">
-      <div className="max-w-3xl mx-auto text-center">
-        <h2 className="text-2xl sm:text-3xl font-raleway font-semibold mb-3 text-[#ECF1F0]">
+    <section className="py-16 sm:py-24 px-6 md:px-16 lg:px-20 bg-white">
+      {/* Header */}
+      <div className="max-w-3xl mx-auto text-center mb-16">
+        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
           Your questions answered
         </h2>
-        <p className="text-sm sm:text-lg font-roboto text-[#B6B6B6] mb-8">
+        <p className="text-lg text-gray-600">
           Explore our FAQ section to learn more.
         </p>
       </div>
 
-      <div className="max-w-3xl mx-auto space-y-6">
+      {/* FAQ List */}
+      <div className="max-w-4xl mx-auto">
         {faqs.map((faq, index) => (
-          <motion.div
+          <div
             key={index}
-            className={`border-b border-[#ffffff17] transition-all duration-500 ease-in-out ${
-              activeIndex === index ? "pb-6" : "pb-4"
-            }`}
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.6 }}
+            className="border-b border-gray-100 last:border-none"
           >
             <button
               onClick={() => toggleFAQ(index)}
-              className="w-full flex justify-between items-center text-left text-base sm:text-lg font-raleway text-[#ECF1F0] hover:text-[#0FAE96] transition-colors duration-500 ease-in-out"
+              className="w-full flex justify-between items-center py-6 text-left group transition-all duration-200"
             >
-              {faq.question}
-              <span
-                className={`ml-2 transform transition-transform duration-500 ease-in-out text-base sm:text-lg font-raleway text-[#0FAE96] ${
-                  activeIndex === index ? "rotate-180" : "rotate-0"
-                }`}
-              >
-                {activeIndex === index ? "−" : "+"}
+              <span className={`text-lg sm:text-xl font-medium transition-colors duration-200 ${activeIndex === index ? "text-gray-900" : "text-gray-800 group-hover:text-blue-600"}`}>
+                {faq.question}
+              </span>
+              
+              <span className="ml-6 flex-shrink-0 text-gray-400 group-hover:text-blue-600 transition-colors duration-200">
+                <Plus 
+                    className={`w-6 h-6 transform transition-transform duration-300 ease-in-out ${activeIndex === index ? "rotate-45" : "rotate-0"}`} 
+                />
               </span>
             </button>
-            <div
-              className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                activeIndex === index ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-              }`}
-            >
+
+            <AnimatePresence>
               {activeIndex === index && (
-                <p className="mt-4 font-roboto text-xs sm:text-sm text-[#B6B6B6]">
-                  {faq.answer}
-                </p>
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <p className="text-base text-gray-600 leading-relaxed pb-8 pr-12">
+                    {faq.answer}
+                  </p>
+                </motion.div>
               )}
-            </div>
-          </motion.div>
+            </AnimatePresence>
+          </div>
         ))}
       </div>
     </section>

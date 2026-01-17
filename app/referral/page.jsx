@@ -5,6 +5,9 @@ import { getDatabase, ref, get } from "firebase/database";
 import ReferralInvite from '@/components/referal/referralinvite';
 import ReferralStats from '@/components/referal/referralstats';
 import ReferralBenefit from '@/components/referal/referralbenefit';
+import PricingSection from "@/components/pricing/PricingSection";
+import FAQSection from "@/components/home/FAQSection";
+import JobSeeker from "@/components/JobSeeker";
 
 const Referral = ({ params }) => {
   const [isLogin, setIsLogin] = useState(null);
@@ -13,15 +16,20 @@ const Referral = ({ params }) => {
   const db = getDatabase(app);
 
   return (
-    <section className="min-h-screen bg-[#11011E] text-white p-4 sm:p-8 md:p-16 lg:p-24 rounded-none border-0 backdrop-blur-md">
-      <div className="max-w-6xl mx-auto">
-        <ReferralInvite />
-        <div className="my-6 sm:my-8 md:mb-16"></div>
-        <ReferralBenefit />
-        <div className="my-6 sm:my-8"></div>
-        <ReferralStats />
-      </div>
-    </section>
+    // <section className="min-h-screen bg-[#11011E] text-white p-4 sm:p-8 md:p-16 lg:p-24 rounded-none border-0 backdrop-blur-md">
+    //   <div className="max-w-6xl mx-auto">
+    //     <ReferralInvite />
+    //     <div className="my-6 sm:my-8 md:mb-16"></div>
+    //     <ReferralBenefit />
+    //     <div className="my-6 sm:my-8"></div>
+    //     <ReferralStats />
+    //   </div>
+    // </section>
+    <>
+      <PricingSection/>
+      <FAQSection/>
+      <JobSeeker/>
+    </>
   );
 };
 

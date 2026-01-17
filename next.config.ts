@@ -26,6 +26,9 @@ const nextConfig = {
     domains: [
       'lh3.googleusercontent.com',
       'firebasestorage.googleapis.com', // Add Firebase Storage
+      'randomuser.me',       // Added for avatar thumbnails
+      'images.unsplash.com', // Added for user card photos
+      'upload.wikimedia.org' // Added for the map background
     ],
   },
 };
