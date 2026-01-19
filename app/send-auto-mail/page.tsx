@@ -9,7 +9,7 @@ import { getDatabase, ref, set, get, push } from "firebase/database";
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Toggle this to enable/disable mock data test button (for testing the custom email functionality)
-const ENABLE_MOCK_DATA = true;
+const ENABLE_MOCK_DATA = false;
 
 // Email status type for per-company tracking
 type EmailStatus = 'pending' | 'sending' | 'sent' | 'failed';
