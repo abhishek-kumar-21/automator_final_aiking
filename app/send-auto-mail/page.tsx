@@ -695,6 +695,7 @@ BODY:
     }
 
     console.log('Modal submit - Subject:', subject, 'Body:', body);
+    hasRun.current = true; // Prevent modal from re-opening
     setShowModal(false);
     setShowDuplicateWarning(false);
     setDuplicateCompanies([]);
@@ -705,6 +706,7 @@ BODY:
 
   // Handle confirming to send despite duplicates
   const handleConfirmDuplicates = async () => {
+    hasRun.current = true; // Prevent modal from re-opening
     setShowDuplicateWarning(false);
     setShowModal(false);
     await sendBatchEmails(subject, body);
@@ -734,10 +736,17 @@ BODY:
   };
 
   const handleCancel = () => {
+    hasRun.current = true; // Prevent modal from re-opening
     setShowModal(false);
     // Optionally clear companies if cancel, or keep for retry
     setSubject("");
     setBody("");
+  };
+
+  // Allow user to manually re-open modal for composing email
+  const handleOpenModal = () => {
+    hasRun.current = false; // Allow modal to open
+    setShowModal(true);
   };
 
   // Step 5: Authentication email sending (uses default, no subject/body needed for test)
@@ -1038,24 +1047,30 @@ ${urd}`;
   }, [emailLimitReached]);
 
   // Open modal when emails are available AND resume is fetched
-  // Modal ALWAYS opens first so user can customize email before sending
+  // Modal opens first so user can customize email before sending
+  // hasRun prevents re-opening after user submits (until new companies load)
   useEffect(() => {
     // Log the current state for debugging
     console.log("Modal trigger check:", {
       emailArrayLength: emailArray.length,
+      hasRun: hasRun.current,
       emailLimitReached,
       resumeFetchedCurrent: resumeFetched.current,
       resumeExists: !!resume,
       showModal
     });
 
-    // Always open modal when we have companies and resume is ready
-    // Don't use hasRun - we want the modal to open every time conditions are met
-    if (emailArray.length > 0 && !emailLimitReached && resumeFetched.current && !showModal) {
+    // Open modal when:
+    // - Companies exist
+    // - Resume is loaded
+    // - Not at email limit
+    // - Modal not already open
+    // - Haven't already submitted (hasRun)
+    if (emailArray.length > 0 && !emailLimitReached && resumeFetched.current && !showModal && !hasRun.current) {
       console.log("Opening modal for email customization...");
       setShowModal(true);
     }
-  }, [emailArray, resume, emailLimitReached, showModal]); // Watch showModal to prevent infinite loop
+  }, [emailArray, resume, emailLimitReached, showModal]);
 
   const handleUpdatePlan = () => {
     window.location.href = "/payment";
@@ -1099,6 +1114,21 @@ ${urd}`;
                 "Applications"
               )}
             </h2>
+
+            {/* Show Compose Email button when modal is closed and not actively sending */}
+            {!showModal && !sendingProgress.isActive && emailStatuses.size === 0 && (
+              <button
+                onClick={handleOpenModal}
+                className="mb-4 px-6 py-3 bg-[#0FAE96] text-white font-semibold rounded-lg hover:bg-[#0C8C79] transition-all flex items-center gap-2 shadow-lg"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+                Compose Email
+              </button>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {companies.map((company, index) => (
                 <div
