@@ -431,8 +431,11 @@ BODY:
     getEmailCount();
   }, [uid]);
 
-  // Step 4: Reusable email sending function with validation
-  const sendEmail = async (companyEmail: string, subjectParam?: string, bodyParam?: string) => {
+  // Step 4: Reusable email sending function with validation, timeout, and retry
+  const sendEmail = async (companyEmail: string, subjectParam?: string, bodyParam?: string, retryCount = 0): Promise<boolean> => {
+    const MAX_RETRIES = 2;
+    const TIMEOUT_MS = 30000; // 30 second timeout
+
     if (!userEmail) {
       toast.error("Sender email is missing.");
       return false;
@@ -454,19 +457,26 @@ BODY:
     const finalBody = bodyParam || ""; // Custom body or empty (no default "hello")
 
     // Debug log to check what's being sent
-    console.log('Sending email to:', companyEmail);
-    console.log('Subject:', finalSubject);
-    console.log('Body:', finalBody);
-    console.log('Full payload:', {
+    console.log(`📧 [Attempt ${retryCount + 1}/${MAX_RETRIES + 1}] Sending email to:`, companyEmail);
+    console.log('📝 Subject:', finalSubject);
+    console.log('📋 Payload:', {
       sender_email: userEmail,
       company_email: companyEmail,
       resume_link: resume,
       sender_name: userName,
-      subject: finalSubject,
-      text: finalBody,
     });
 
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      console.warn(`⏱️ Request to ${companyEmail} timed out after ${TIMEOUT_MS / 1000}s`);
+    }, TIMEOUT_MS);
+
     try {
+      console.log(`🌐 Making API request to email server...`);
+      const startTime = Date.now();
+
       const response = await fetch("https://send-auto-email-user-render.onrender.com/send-job-application", {
         method: "POST",
         body: JSON.stringify({
@@ -481,28 +491,69 @@ BODY:
         headers: {
           "Content-Type": "application/json",
         },
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+      console.log(`⏱️ Response received in ${elapsed}s, status: ${response.status}`);
+
       if (response.ok) {
-        console.log(`Email sent successfully to ${companyEmail}`);
+        console.log(`✅ Email sent successfully to ${companyEmail}`);
         return true;
       } else {
-        const data = await response.json();
-        console.error("Error from server:", data.error);
+        const data = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error("❌ Error from server:", data.error);
+
         if (response.status === 401 && data.reauthUrl) {
           toast.info("For security reasons, please verify your email again.");
           localStorage.setItem("emailPermissionGranted", "false");
           setTimeout(() => {
             window.location.href = data.reauthUrl || "/email_auth";
           }, 2000);
+        } else if (response.status >= 500 && retryCount < MAX_RETRIES) {
+          // Server error - retry
+          console.log(`🔄 Server error, retrying in 2s... (attempt ${retryCount + 2}/${MAX_RETRIES + 1})`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          return sendEmail(companyEmail, subjectParam, bodyParam, retryCount + 1);
         } else {
-          toast.error(`Error sending email to ${companyEmail}: ${data.error}`);
+          toast.error(`Error sending email to ${companyEmail}: ${data.error || 'Server error'}`);
         }
         return false;
       }
     } catch (error: unknown) {
+      clearTimeout(timeoutId);
       const message = error instanceof Error ? error.message : String(error);
-      console.error("Error sending email:", message);
+
+      // Check if it was a timeout/abort
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error(`⏱️ Request timed out for ${companyEmail}`);
+
+        // Retry on timeout
+        if (retryCount < MAX_RETRIES) {
+          console.log(`🔄 Timeout - retrying in 3s... (attempt ${retryCount + 2}/${MAX_RETRIES + 1})`);
+          toast.info(`Email to ${companyEmail} timed out. Retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          return sendEmail(companyEmail, subjectParam, bodyParam, retryCount + 1);
+        }
+
+        toast.error(`Email to ${companyEmail} timed out after ${MAX_RETRIES + 1} attempts.`);
+        return false;
+      }
+
+      // Network error - retry
+      if (message.includes('fetch') || message.includes('network') || message.includes('Failed to fetch')) {
+        console.error(`🌐 Network error for ${companyEmail}:`, message);
+
+        if (retryCount < MAX_RETRIES) {
+          console.log(`🔄 Network error - retrying in 3s... (attempt ${retryCount + 2}/${MAX_RETRIES + 1})`);
+          toast.info(`Network error. Retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          return sendEmail(companyEmail, subjectParam, bodyParam, retryCount + 1);
+        }
+      }
+
+      console.error("❌ Error sending email:", message);
       toast.error(`Failed to send email to ${companyEmail}.`);
       return false;
     }
@@ -644,6 +695,7 @@ BODY:
     }
 
     console.log('Modal submit - Subject:', subject, 'Body:', body);
+    hasRun.current = true; // Prevent modal from re-opening
     setShowModal(false);
     setShowDuplicateWarning(false);
     setDuplicateCompanies([]);
@@ -654,6 +706,7 @@ BODY:
 
   // Handle confirming to send despite duplicates
   const handleConfirmDuplicates = async () => {
+    hasRun.current = true; // Prevent modal from re-opening
     setShowDuplicateWarning(false);
     setShowModal(false);
     await sendBatchEmails(subject, body);
@@ -683,10 +736,17 @@ BODY:
   };
 
   const handleCancel = () => {
+    hasRun.current = true; // Prevent modal from re-opening
     setShowModal(false);
     // Optionally clear companies if cancel, or keep for retry
     setSubject("");
     setBody("");
+  };
+
+  // Allow user to manually re-open modal for composing email
+  const handleOpenModal = () => {
+    hasRun.current = false; // Allow modal to open
+    setShowModal(true);
   };
 
   // Step 5: Authentication email sending (uses default, no subject/body needed for test)
@@ -705,52 +765,180 @@ BODY:
   //   checkVerifyEmail();
   // }, [userEmail, userName, resume]);
 
-  // Step 6: Fetch Gemini response
+  // Step 6: Fetch Gemini response with error handling and fallback
   useEffect(() => {
     if (!urd || emailLimitReached) return;
 
-    const fetchGeminiResponse = async () => {
+    // Fallback: Extract basic job info from resume text when API fails
+    const extractFallbackJobTitles = (resumeText: string) => {
+      console.log("🔄 Using fallback job title extraction...");
+
+      // Common job title patterns to look for in resume
+      const jobPatterns = [
+        /(?:working as|worked as|position of|role of|title:?)\s*([A-Za-z\s]+(?:Developer|Engineer|Designer|Manager|Analyst|Specialist|Consultant|Lead|Architect))/gi,
+        /(?:^|\n)([A-Za-z\s]+(?:Developer|Engineer|Designer|Manager|Analyst|Specialist|Consultant|Lead|Architect))(?:\s*[-–|]|\s*at|\s*\()/gim,
+      ];
+
+      const foundTitles = new Set<string>();
+
+      for (const pattern of jobPatterns) {
+        let match;
+        while ((match = pattern.exec(resumeText)) !== null) {
+          const title = match[1]?.trim();
+          if (title && title.length > 3 && title.length < 50) {
+            foundTitles.add(title);
+          }
+        }
+      }
+
+      // If no titles found, provide generic ones based on common keywords
+      if (foundTitles.size === 0) {
+        const keywords = resumeText.toLowerCase();
+        if (keywords.includes('react') || keywords.includes('frontend') || keywords.includes('javascript')) {
+          foundTitles.add('Frontend Developer');
+        }
+        if (keywords.includes('node') || keywords.includes('backend') || keywords.includes('api')) {
+          foundTitles.add('Backend Developer');
+        }
+        if (keywords.includes('python') || keywords.includes('data') || keywords.includes('machine learning')) {
+          foundTitles.add('Data Analyst');
+        }
+        if (keywords.includes('full stack') || keywords.includes('fullstack')) {
+          foundTitles.add('Full Stack Developer');
+        }
+        if (foundTitles.size === 0) {
+          foundTitles.add('Software Developer'); // Ultimate fallback
+        }
+      }
+
+      return Array.from(foundTitles).slice(0, 5).map(title => ({
+        jobTitle: title,
+        location: 'remote',
+        experience: '1-3'
+      }));
+    };
+
+    // Retry helper with exponential backoff
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+    const fetchGeminiResponse = async (retryCount = 0, maxRetries = 3) => {
+      console.log("🚀 Starting Gemini Resume Analysis...");
+      console.log("📄 Resume length:", urd?.length || 0, "characters");
+      console.log("🔑 API Key present:", !!gemini_key);
+
+      // Check if API key is missing
+      if (!gemini_key) {
+        console.warn("⚠️ No Gemini API key found, using fallback extraction");
+        toast.warning("No API key found. Using basic job title extraction.");
+        const fallbackData = extractFallbackJobTitles(urd);
+        console.log("📋 Fallback Job Titles:", fallbackData.map(j => j.jobTitle).join(", "));
+        setJsonData(fallbackData);
+        return;
+      }
+
+      // Models to try in order of preference
+      const modelsToTry = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.5-pro"];
+
       try {
-        const exampleOutput = `[
-          {"jobTitle": "Python Developer", "location": "remote", "experience": "2-5"},
-          {"jobTitle": "Backend Developer", "location": "remote", "experience": "2-5"},
-          {"jobTitle": "Full Stack Developer", "location": "remote", "experience": "2-5"},
-          {"jobTitle": "MERN Stack Developer", "location": "remote", "experience": "2-5"},
-          {"jobTitle": "Software Engineer", "location": "remote", "experience": "2-5"}
-        ]`;
+        const userPrompt = `You are an expert career analyst. Analyze the following resume and extract suitable job titles that match the candidate's skills and experience.
 
-        const userPrompt = `Analyze the following resume and extract job titles, location, and experience range.
-                    Response format:
-                    \`\`\`json
-                    [
-                        {"jobTitle": "<Job Title>", "location": "<Preferred Location>", "experience": "<Experience Range>"}
-                    ]
-                    \`\`\`
-                    Resume: ${urd}
-                    Example Output:
-                    \`\`\`json
-                    ${exampleOutput}
-                    \`\`\``;
+IMPORTANT: Do NOT use any predefined list of job titles. Extract job titles DIRECTLY from:
+1. The candidate's actual skills mentioned in the resume
+2. Their work experience and previous job roles
+3. Technologies and tools they know
+4. Their education and certifications
 
+Return 3-5 most suitable job titles that the candidate could apply for.
+
+Response format (return ONLY valid JSON, no other text):
+\`\`\`json
+[
+    {"jobTitle": "<Extracted Job Title>", "location": "<Preferred Location or 'remote' if not specified>", "experience": "<X-Y years based on resume>"}
+]
+\`\`\`
+
+Resume to analyze:
+${urd}`;
+
+        console.log("📤 Sending request to Gemini API...");
         const genAI = new GoogleGenerativeAI(gemini_key);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
-        const response = await model.generateContent(userPrompt);
-        const textResponse = await response.response.text();
+        let textResponse = "";
+        let lastError = null;
 
-        const jsonMatch = textResponse.match(/```json\n([\s\S]*?)\n```/);
-        const jsonOutput = jsonMatch ? JSON.parse(jsonMatch[1]) : JSON.parse(textResponse);
+        // Try each model until one works
+        for (const modelName of modelsToTry) {
+          try {
+            console.log(`🤖 Trying model: ${modelName}...`);
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const response = await model.generateContent(userPrompt);
+            textResponse = await response.response.text();
+            console.log(`✅ Model ${modelName} succeeded!`);
+            break; // Success, exit loop
+          } catch (modelError: any) {
+            lastError = modelError;
+            console.warn(`⚠️ Model ${modelName} failed:`, modelError.message);
+
+            // If rate limited (429), wait and retry with same model
+            if (modelError.message?.includes('429') && retryCount < maxRetries) {
+              const waitTime = Math.pow(2, retryCount) * 2000; // Exponential backoff: 2s, 4s, 8s
+              console.log(`⏳ Rate limited. Waiting ${waitTime / 1000}s before retry ${retryCount + 1}/${maxRetries}...`);
+              toast.info(`Rate limited. Retrying in ${waitTime / 1000} seconds...`);
+              await delay(waitTime);
+              return fetchGeminiResponse(retryCount + 1, maxRetries);
+            }
+
+            // Try next model
+            continue;
+          }
+        }
+
+        // If no model worked
+        if (!textResponse) {
+          throw lastError || new Error("All models failed");
+        }
+
+        console.log("📥 Raw Gemini Response:", textResponse);
+
+        // Parse JSON response with error handling
+        let jsonOutput;
+        try {
+          const jsonMatch = textResponse.match(/```json\n([\s\S]*?)\n```/);
+          jsonOutput = jsonMatch ? JSON.parse(jsonMatch[1]) : JSON.parse(textResponse);
+        } catch (parseError) {
+          console.error("❌ JSON parsing failed, attempting flexible parse...");
+          // Try to extract any JSON array from the response
+          const flexMatch = textResponse.match(/\[[\s\S]*?\]/);
+          if (flexMatch) {
+            jsonOutput = JSON.parse(flexMatch[0]);
+          } else {
+            throw new Error("Could not parse Gemini response as JSON");
+          }
+        }
+
+        // Validate the response structure
+        if (!Array.isArray(jsonOutput) || jsonOutput.length === 0) {
+          throw new Error("Invalid response format: expected non-empty array");
+        }
 
         console.log("✅ Gemini Parsed Response:", jsonOutput);
+        console.log("📋 Extracted Job Titles:", jsonOutput.map((j: any) => j.jobTitle).join(", "));
         setJsonData(jsonOutput);
+
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
         console.error("❌ Error in fetchGeminiResponse:", message);
-        toast.error("Failed to process resume with Gemini API.");
+
+        // Use fallback extraction
+        console.log("🔄 Falling back to local job title extraction...");
+        toast.warning("AI service unavailable. Using basic job extraction.");
+        const fallbackData = extractFallbackJobTitles(urd);
+        console.log("📋 Fallback Job Titles:", fallbackData.map(j => j.jobTitle).join(", "));
+        setJsonData(fallbackData);
       }
     };
 
-    // fetchGeminiResponse();
+    fetchGeminiResponse();
   }, [urd, gemini_key]);
 
   // Step 7: Process Gemini data
@@ -858,14 +1046,31 @@ BODY:
     };
   }, [emailLimitReached]);
 
-  // Open modal when emails are available
+  // Open modal when emails are available AND resume is fetched
+  // Modal opens first so user can customize email before sending
+  // hasRun prevents re-opening after user submits (until new companies load)
   useEffect(() => {
-    if (emailArray.length > 0 && !hasRun.current && !emailLimitReached && resumeFetched.current) {
+    // Log the current state for debugging
+    console.log("Modal trigger check:", {
+      emailArrayLength: emailArray.length,
+      hasRun: hasRun.current,
+      emailLimitReached,
+      resumeFetchedCurrent: resumeFetched.current,
+      resumeExists: !!resume,
+      showModal
+    });
+
+    // Open modal when:
+    // - Companies exist
+    // - Resume is loaded
+    // - Not at email limit
+    // - Modal not already open
+    // - Haven't already submitted (hasRun)
+    if (emailArray.length > 0 && !emailLimitReached && resumeFetched.current && !showModal && !hasRun.current) {
       console.log("Opening modal for email customization...");
       setShowModal(true);
-      hasRun.current = true;
     }
-  }, [emailArray]);
+  }, [emailArray, resume, emailLimitReached, showModal]);
 
   const handleUpdatePlan = () => {
     window.location.href = "/payment";
@@ -909,6 +1114,21 @@ BODY:
                 "Applications"
               )}
             </h2>
+
+            {/* Show Compose Email button when modal is closed and not actively sending */}
+            {!showModal && !sendingProgress.isActive && emailStatuses.size === 0 && (
+              <button
+                onClick={handleOpenModal}
+                className="mb-4 px-6 py-3 bg-[#0FAE96] text-white font-semibold rounded-lg hover:bg-[#0C8C79] transition-all flex items-center gap-2 shadow-lg"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+                Compose Email
+              </button>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {companies.map((company, index) => (
                 <div
