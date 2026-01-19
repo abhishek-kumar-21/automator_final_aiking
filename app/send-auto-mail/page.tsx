@@ -9,7 +9,7 @@ import { getDatabase, ref, set, get, push } from "firebase/database";
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Toggle this to enable/disable mock data test button (for testing the custom email functionality)
-const ENABLE_MOCK_DATA = false;
+const ENABLE_MOCK_DATA = true;
 
 // Email status type for per-company tracking
 type EmailStatus = 'pending' | 'sending' | 'sent' | 'failed';
@@ -1037,14 +1037,25 @@ ${urd}`;
     };
   }, [emailLimitReached]);
 
-  // Open modal when emails are available
+  // Open modal when emails are available AND resume is fetched
+  // Modal ALWAYS opens first so user can customize email before sending
   useEffect(() => {
-    if (emailArray.length > 0 && !hasRun.current && !emailLimitReached && resumeFetched.current) {
+    // Log the current state for debugging
+    console.log("Modal trigger check:", {
+      emailArrayLength: emailArray.length,
+      emailLimitReached,
+      resumeFetchedCurrent: resumeFetched.current,
+      resumeExists: !!resume,
+      showModal
+    });
+
+    // Always open modal when we have companies and resume is ready
+    // Don't use hasRun - we want the modal to open every time conditions are met
+    if (emailArray.length > 0 && !emailLimitReached && resumeFetched.current && !showModal) {
       console.log("Opening modal for email customization...");
       setShowModal(true);
-      hasRun.current = true;
     }
-  }, [emailArray]);
+  }, [emailArray, resume, emailLimitReached, showModal]); // Watch showModal to prevent infinite loop
 
   const handleUpdatePlan = () => {
     window.location.href = "/payment";
