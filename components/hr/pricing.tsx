@@ -48,10 +48,13 @@ const PricingSection = () => {
   const [currency, setCurrency] = useState("");
   const [country, setCountry] = useState("");
   const [country_name, setCountryname] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [uid, setUid] = useState("")
+  const [error, setError] = useState(null);
+  const [uid, setUid] = useState("");
   const [manualSelect, setManualSelect] = useState(false);
-  const db = getDatabase(app)
+  // NEW STATE: Track which card index is currently hovered
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+
+  const db = getDatabase(app);
 
   useEffect(() => {
     // Set up the Firebase auth state listener
@@ -107,7 +110,7 @@ const PricingSection = () => {
   }, [currency, country, country_name, error]);
 
   useEffect(() => {
-    const checkSubscriptionStatus = async (uid: string) => {
+    const checkSubscriptionStatus = async (uid) => {
       try {
         const paymentRef = ref(db, `hr/${uid}/Payment`);
         const snapshot = await get(paymentRef);
@@ -137,11 +140,11 @@ const PricingSection = () => {
     if (uid) checkSubscriptionStatus(uid)
   }, [uid])
 
-  const formatPrice = (usd: any, inr: any) => {
+  const formatPrice = (usd, inr) => {
     return currency === "INR" ? `${inr.toLocaleString("en-IN")}` : `${usd}`;
   };
 
-  const handleManualSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleManualSelect = (e) => {
     const selected = COUNTRY_OPTIONS.find(opt => opt.code === e.target.value);
     if (selected) {
       setCountry(selected.code);
@@ -170,8 +173,7 @@ const PricingSection = () => {
       ],
       buttonText: "Get Started",
       redirectUrl: "https://chromewebstore.google.com/detail/jobform-automator-ai-auto/lknamgjmcmbfhcjjeicdndokedcmpbaa",
-      buttonStyle:
-        "bg-transparent border border-[#0FAE96] text-[#0FAE96] hover:bg-[#0FAE96] hover:text-white hover:shadow-lg transition-all duration-300",
+      isPremium: false,
     },
     {
       name: "Premium",
@@ -186,8 +188,7 @@ const PricingSection = () => {
         "Advanced AI-Crafted Resume",
       ],
       buttonText: "Subscribe",
-      buttonStyle:
-        "bg-[#0FAE96] text-white hover:brightness-110 hover:shadow-xl transition-all duration-300",
+      isPremium: true, // Used for highlighting
       bestSeller: true,
     },
     {
@@ -202,160 +203,169 @@ const PricingSection = () => {
         "Real-Time Skill Gap Analysis with Free Learning Links",
       ],
       buttonText: "Subscribe",
-      buttonStyle:
-        "bg-transparent border border-[#0FAE96] text-[#0FAE96] hover:bg-[#0FAE96] hover:text-white hover:shadow-lg transition-all duration-300",
+      isPremium: false,
     },
   ];
-
-  const cardRefs = useRef([]);
-  const [isInView, setIsInView] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) setIsInView(true);
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    cardRefs.current
-      .filter((card) => card !== null)
-      .forEach((card) => observer.observe(card));
-
-    return () => {
-      cardRefs.current
-        .filter((card) => card !== null)
-        .forEach((card) => observer.unobserve(card));
-    };
-  }, []);
 
   function handlePyment(name, usd, inr) {
     if (name !== "Basic") {
       const selectedPrice = currency === "INR" ? inr : usd;
       window.location.href = `/payment?plan=${encodeURIComponent(
         name
-      )}&price=${encodeURIComponent(selectedPrice)}¤cy=${currency}&for=${encodeURIComponent("hr")}`;
+      )}&price=${encodeURIComponent(selectedPrice)}&currency=${currency}&for=${encodeURIComponent("hr")}`;
+    } else {
+        // Handle Basic plan click if needed (e.g. redirect to extension)
+         window.open(
+        "https://chromewebstore.google.com/detail/jobform-automator-ai-auto/lknamgjmcmbfhcjjeicdndokedcmpbaa",
+        "_blank"
+      );
     }
   }
 
   return (
-    <section className="bg-[#11011E] text-[#ECF1F0] py-20 px-6 sm:px-8">
-      <div className="max-w-6xl mx-auto text-center">
-        {/* Header */}
-        <div className="inline-flex items-center space-x-3 px-5 py-2 rounded-full border border-[#FFFFFF0D] bg-[#FFFFFF05] backdrop-blur-lg">
-          <span className="w-3 h-3 rounded-full bg-[#0FAE96]" />
-          <span className="text-sm text-[#0FAE96]">Pricing</span>
+    <section className="bg-white py-16 sm:py-24 px-4 sm:px-6 lg:px-8 border-none shadow-none outline-none">
+      <div className="max-w-7xl mx-auto text-center">
+        {/* Header Section */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 rounded-full bg-blue-50 border border-blue-200">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+          </span>
+          <span className="text-sm font-medium text-slate-800 tracking-tight">
+            Pricing
+          </span>
         </div>
-        <h2 className="text-3xl sm:text-4xl font-semibold font-raleway mt-6">
+
+        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
           The perfect plan for your job hunt
         </h2>
-        <p className="text-lg sm:text-xl text-[#B6B6B6] mt-3">
+
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-12">
           Choose the plan that best supports your HR recruitment needs and unlock more
           powerful features.
         </p>
-        {manualSelect && (
-          <div className="mt-6 flex flex-col items-center">
-            <span className="text-red-500 mb-2">{error}</span>
-            <label htmlFor="country-select" className="mb-2">Select your country:</label>
-            <select
-              id="country-select"
-              className="p-2 rounded border text-black"
-              onChange={handleManualSelect}
-              defaultValue=""
-            >
-              <option value="" disabled>Select country</option>
-              {COUNTRY_OPTIONS.map(opt => (
-                <option key={opt.code} value={opt.code}>{opt.name}</option>
-              ))}
-            </select>
+
+        {/* Location Error / Manual Select */}
+        {error && (
+          <div className="mb-8">
+            <p className="text-red-500 mb-2">{error}</p>
+            {manualSelect && (
+              <select
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full max-w-xs mx-auto p-2.5"
+                value={country}
+                onChange={handleManualSelect}
+              >
+                <option value="" disabled>Select country</option>
+                {COUNTRY_OPTIONS.map(opt => (
+                    <option key={opt.code} value={opt.code}>{opt.name}</option>
+                ))}
+              </select>
+            )}
           </div>
         )}
-        {/* Pricing Cards */}
-        <div className="pricing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-          {plans.map((plan, index) => (
-            <div
-              key={index}
-              ref={(el) => (cardRefs.current[index] = el)}
-              className={`
-                card relative group p-6 sm:p-8 rounded-3xl border transition-all duration-700 ease-in-out transform
-                ${isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}
-                ${plan.bestSeller
-                  ? "border-[#0FAE96] bg-gradient-to-bl from-[#0fae9655] via-[#11011E] to-[#11011E] shadow-[0_0_20px_#0FAE96aa]"
-                  : "border-[#ffffff1A] bg-[#FFFFFF05]"
-                }
-                hover:scale-[1.02] hover:shadow-2xl
-              `}
-            >
-              {/* Best Seller Badge */}
-              {plan.bestSeller && (
-                <div className="absolute top-4 right-4 bg-[#0FAE96] text-white text-xs px-3 py-1 rounded-full shadow-md font-medium">
-                  Best seller
-                </div>
-              )}
 
-              <h3 className="text-xl font-semibold font-raleway">
-                {plan.name}
-              </h3>
-              <p className="text-sm text-[#B6B6B6] mt-2">{plan.description}</p>
-              <div className="mt-6 text-4xl font-bold">
-                {currency && country ? (
-                  formatPrice(plan.priceUSD, plan.priceINR)
-                ) : (
-                  <div className="flex justify-center items-center">
-                    <div className="loader border-t-4 border-[#0FAE96] rounded-full w-8 h-8 animate-spin"></div>
-                  </div>
-                )}
-              </div>
+        {/* Pricing Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start group">
+          {plans.map((plan, index) => {
+            // Determine blur/hover states
+            const isBlurred = hoveredIndex !== null && hoveredIndex !== index;
+            const isHovered = hoveredIndex === index;
 
-              <button
-                className={`mt-6 w-full px-4 py-2 rounded-xl ${plan.buttonStyle}`}
-                onClick={() =>
-                  handlePyment(plan.name, plan.priceUSD, plan.priceINR)
-                }
+            // Base classes
+            let cardClasses =
+              "relative rounded-3xl p-8 transition-all duration-300 ease-in-out origin-center ";
+
+            // Styling based on premium/standard
+            if (plan.isPremium) {
+              cardClasses +=
+                "bg-blue-50 border border-blue-100 shadow-sm z-10 scale-105 ";
+            } else {
+              cardClasses += "bg-gray-50 border border-gray-100 shadow-sm ";
+            }
+
+            // Apply blur/hover effects
+            if (isBlurred) {
+              cardClasses += "blur-[2px] opacity-75 scale-[0.98] grayscale-[30%]";
+            } else if (isHovered) {
+              cardClasses += "hover:-translate-y-2 shadow-xl";
+            } else {
+              cardClasses += "hover:-translate-y-1";
+            }
+
+            return (
+              <div
+                key={index}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                className={cardClasses}
               >
-                {plan.buttonText}
-              </button>
+                {/* Best Seller Badge */}
+                {plan.bestSeller && (
+                    <div className="absolute top-4 right-4 bg-blue-600 text-white text-xs px-3 py-1 rounded-full shadow-md font-medium">
+                        Best seller
+                    </div>
+                )}
 
-              {/* Features */}
-              <ul className="mt-6 space-y-3 text-sm text-[#B6B6B6] text-left">
-                {plan.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-center">
-                    <span className="w-3 h-3 mr-3 bg-[#0FAE96] rounded-full shrink-0" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+                {/* Card Title */}
+                <h3
+                  className={`text-2xl font-bold mb-2 ${
+                    plan.isPremium ? "text-blue-600" : "text-gray-900"
+                  }`}
+                >
+                  {plan.name}
+                </h3>
+
+                {/* Description */}
+                <p className="text-sm text-gray-500 mb-6 min-h-[40px]">
+                  {plan.description}
+                </p>
+
+                {/* Price */}
+                <div className="mb-8">
+                  {currency && country ? (
+                    <span className="text-4xl font-bold text-gray-900">
+                      {formatPrice(plan.priceUSD, plan.priceINR)}
+                    </span>
+                  ) : (
+                    <div className="flex justify-center h-10">
+                      <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Button */}
+                <button
+                  onClick={() =>
+                    handlePyment(plan.name, plan.priceUSD, plan.priceINR)
+                  }
+                  className={`w-full py-3 px-4 rounded-xl font-semibold transition-colors duration-200 mb-8 ${
+                    isBlurred ? "pointer-events-none" : ""
+                  } ${
+                    plan.isPremium
+                      ? "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20"
+                      : "bg-white text-blue-600 border border-blue-200 hover:bg-blue-50"
+                  }`}
+                >
+                  {plan.buttonText}
+                </button>
+
+                {/* Features List */}
+                <ul className="space-y-4 text-left">
+                  {plan.features.map((feature, idx) => (
+                    <li
+                      key={idx}
+                      className="flex items-start text-sm text-gray-600"
+                    >
+                      <span className="w-2 h-2 mt-1.5 mr-3 bg-blue-600 rounded-full shrink-0" />
+                      <span className="leading-relaxed">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       </div>
-      {/* Custom CSS to blur/dim non-hovered cards and for loader */}
-      <style jsx>{`
-        .pricing-grid:hover .card {
-          filter: blur(4px);
-          opacity: 0.6;
-          transition: filter 0.3s ease, opacity 0.3s ease;
-        }
-        .pricing-grid:hover .card:hover {
-          filter: blur(0px) !important;
-          opacity: 1 !important;
-          transition: filter 0.3s ease, opacity 0.3s ease;
-        }
-        .loader {
-          border: 4px solid #f3f3f3;
-          border-top: 4px solid #0FAE96;
-          border-radius: 50%;
-          width: 32px;
-          height: 32px;
-          animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
     </section>
   );
 };

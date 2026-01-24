@@ -12,14 +12,14 @@ const Milestones = () => {
   const totalCount = milestones.length;
 
   return (
-  <div className="flex flex-col bg-[#11011E]">
-      <Card className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)]">
+    <div className="flex flex-col bg-slate-50 p-4"> {/* Changed to light background */}
+      <Card className="bg-white border-slate-200 shadow-sm"> {/* Changed to white card with subtle border */}
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg sm:text-xl ml-7 mt-7 font-raleway font-bold text-[#ECF1F0]">
+            <CardTitle className="text-lg sm:text-xl ml-7 mt-7 font-raleway font-bold text-slate-900">
               Milestones
             </CardTitle>
-            <Badge className="border-[rgba(255,255,255,0.05)] mr-7 text-[#B6B6B6] font-inter text-xs">
+            <Badge variant="outline" className="border-slate-200 mr-7 text-slate-500 font-inter text-xs">
               {achievedCount}/{totalCount} Achieved
             </Badge>
           </div>
@@ -29,38 +29,38 @@ const Milestones = () => {
             {milestones.map((milestone, index) => (
               <div
                 key={milestone.id}
-                className={`flex items-start p-4 rounded-lg ${
+                className={`flex items-start p-4 rounded-lg transition-colors ${
                   milestone.isAchieved
-                    ? 'bg-[rgba(15,174,150,0.05)] border border-[rgba(15,174,150,0.2)]'
-                    : 'bg-[rgba(255,255,255,0.02)]'
+                    ? 'bg-blue-50 border border-blue-100' // Achieved: Light Blue tint
+                    : 'bg-slate-50 border border-transparent' // Pending: Very light gray
                 }`}
               >
                 <div className="milestone-badge mr-3 flex-shrink-0">
                   {milestone.isAchieved ? (
-                    <CheckCircle className="h-5 w-5 text-[#0FAE96]" />
+                    <CheckCircle className="h-5 w-5 text-blue-600" /> // Primary Blue
                   ) : (
-                    <Circle className="h-5 w-5 text-[#B6B6B6]" />
+                    <Circle className="h-5 w-5 text-slate-300" /> // Muted Gray
                   )}
                 </div>
                 <div>
                   <h3
                     className={`font-raleway font-semibold text-sm sm:text-base ${
-                      milestone.isAchieved ? 'text-[#0FAE96]' : 'text-[#ECF1F0]'
+                      milestone.isAchieved ? 'text-blue-700' : 'text-slate-900'
                     }`}
                   >
                     {milestone.name}
                   </h3>
-                  <p className="text-[#B6B6B6] font-inter text-sm mt-1">
+                  <p className="text-slate-600 font-inter text-sm mt-1">
                     {milestone.description}
                   </p>
                   <div className="mt-2">
-                    <span className="text-xs font-raleway font-semibold text-[#ECF1F0]">
+                    <span className="text-xs font-raleway font-semibold text-slate-800">
                       Requirements:
                     </span>
-                    <ul className="text-[#B6B6B6] font-inter text-xs mt-1 space-y-1">
+                    <ul className="text-slate-500 font-inter text-xs mt-1 space-y-1">
                       {milestone.requirements.map((req, idx) => (
                         <li key={idx} className="flex items-center">
-                          <span className="mr-1">•</span> {req}
+                          <span className="mr-1 text-blue-400">•</span> {req}
                         </li>
                       ))}
                     </ul>

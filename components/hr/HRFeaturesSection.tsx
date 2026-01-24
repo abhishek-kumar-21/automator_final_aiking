@@ -1,121 +1,94 @@
+/** @format */
 "use client";
-
-import React, { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import React from "react";
+import { FaBriefcase, FaGlobe, FaBolt, FaShieldAlt } from "react-icons/fa";
 
 const FeaturesSection = () => {
   const features = [
     {
-      icon: "/images/Bag.png",
+      id: 1,
       title: "Resume Auto-Download",
       description:
         "Zero clicks, zero missed candidates.",
+      icon: <FaBriefcase className="w-6 h-6 text-blue-600" />,
     },
     {
-      icon: "/images/globle.png",
+      id: 2,
       title: "AI Resume Parsing",
       description:
         "Structured data ready for your ATS; export anytime.",
+      icon: <FaGlobe className="w-6 h-6 text-blue-600" />,
     },
     {
-      icon: "/images/bolt.png",
+      id: 3,
       title: "AI Candidate Outreach",
       description:
         "Personalised sequences that nurture talent while you sleep.",
+      icon: <FaBolt className="w-6 h-6 text-blue-600" />,
     },
     {
-      icon: "/images/shield.png",
-      title: " AI Video Interviews",
+      id: 4,
+      title: "AI Video Interviews",
       description:
         "Consistent questions, real-time scoring, shareable highlights.",
+      icon: <FaShieldAlt className="w-6 h-6 text-blue-600" />,
     },
   ];
 
-  // Create refs for each feature card for animation
-  const sectionRef = useRef(null);
-  const [animatedCards, setAnimatedCards] = useState([]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          // Stagger the animations when section comes into view
-          const timer = setTimeout(() => {
-            setAnimatedCards(features.map((_, i) => i));
-          }, 100);
-          return () => clearTimeout(timer);
-        }
-      },
-      { threshold: 0.2 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
-      }
-    };
-  }, [features.length]);
-
   return (
-    <section 
-      ref={sectionRef}
-      className="bg-[#11011E] text-white py-12 md:py-20 px-4 overflow-hidden"
-    >
-      <div className="max-w-6xl mx-auto">
-        {/* Section Label - centered on mobile */}
-        <div className="flex justify-center">
-          <div className="flex items-center space-x-3 px-4 py-2 bg-[rgba(255,255,255,0.05)] border border-[#FFFFFF0D] rounded-full">
-            <div className="w-2.5 h-2.5 bg-[#0FAE96] rounded-full"></div>
-            <div className="text-sm text-[#0FAE96] font-medium">Features</div>
+    // Changed section bg to slate-50 to make white cards pop
+    <section className="bg-white py-16 sm:py-24 border-none shadow-none outline-none">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+
+        {/* Header Section */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 rounded-full bg-blue-50 border border-blue-200">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+            </span>
+            <span className="text-sm font-medium text-slate-800 tracking-tight">Features</span>
           </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            The Future Doesn't Wait. Neither Do You.
+          </h1>
+          <p className="text-lg text-slate-600 leading-relaxed">
+            All-in-one feature stack
+          </p>
         </div>
 
-        {/* Section Header - responsive text sizes */}
-        <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-[#ECF1F0] text-center mt-6 max-w-3xl mx-auto leading-tight">
-        The Future Doesn’t Wait. Neither Do You
-        </h2>
-
-        {/* Section Subheading - improved readability */}
-        <p className="mt-4 text-base md:text-lg text-[#B6B6B6] text-center max-w-2xl mx-auto">
-        All-in-one feature stack
-        </p>
-
-        {/* Features Grid - better responsive layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mt-12">
-          {features.map((feature, index) => (
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+          {features.map((feature) => (
             <div
-              key={index}
-              className={`bg-[rgba(255,255,255,0.02)] border border-[#ffffff17] backdrop-blur-xl rounded-2xl p-6 transition-all duration-500 ease-out transform ${
-                animatedCards.includes(index)
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-10"
-              } hover:bg-[rgba(255,255,255,0.05)] hover:border-[#ffffff30] hover:shadow-lg hover:-translate-y-1`}
-              style={{ transitionDelay: `${index * 100}ms` }}
+              key={feature.id}
+              className="
+                group relative bg-blue-50/50 rounded-2xl p-8 
+                border border-blue-100 shadow-sm 
+                transition-all duration-300 ease-in-out
+                hover:shadow-xl hover:shadow-blue-900/5 hover:-translate-y-1 hover:border-blue-200
+                flex flex-col items-center text-center
+              "
             >
-              {/* Icon - better positioning */}
-              <div className="flex justify-center mb-6">
-                <div className="flex justify-center items-center w-16 h-16 bg-[#2C223B] rounded-full shadow-md">
-                  <Image
-                    src={feature.icon}
-                    alt={`${feature.title} Icon`}
-                    width={32}
-                    height={32}
-                    className="transform transition-transform duration-300 group-hover:scale-110"
-                  />
+              {/* Icon Container */}
+              <div className="
+                mb-6 w-14 h-14 rounded-full 
+                bg-blue-100 border border-blue-200
+                flex items-center justify-center 
+                transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3
+              ">
+                <div className="text-blue-600 transition-colors duration-300">
+                  {feature.icon}
                 </div>
               </div>
-              
-              {/* Title - improved typography */}
-              <h3 className="text-lg md:text-xl font-semibold text-[#ECF1F0] text-center mb-3">
+
+              {/* Title */}
+              <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors">
                 {feature.title}
               </h3>
-              
-              {/* Description - better readability */}
-              <p className="text-sm md:text-base text-[#B6B6B6] text-center leading-relaxed">
+
+              {/* Description */}
+              <p className="text-sm text-slate-600 leading-relaxed">
                 {feature.description}
               </p>
             </div>

@@ -1,12 +1,13 @@
 import * as React from "react"
-// removed classname from the code to remove error
+
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({  ...props }, ref) => (
+>(({ ...props }, ref) => (
   <div
     ref={ref}
-    className="rounded-lg border border-gray-200 bg-white shadow-sm"
+    // Changed: bg-white, black text, and a soft blue-ish border/shadow
+    className="rounded-xl border border-slate-200 bg-white text-slate-950 shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-100"
     {...props}
   />
 ))
@@ -27,10 +28,11 @@ CardHeader.displayName = "CardHeader"
 const CardTitle = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLHeadingElement>
->(({  ...props }, ref) => (
+>(({ ...props }, ref) => (
   <h3
     ref={ref}
-    className="text-2xl font-semibold leading-none tracking-tight"
+    // Changed: Explicitly set text to slate-900 (near black) for better contrast
+    className="text-2xl font-bold leading-none tracking-tight text-slate-900"
     {...props}
   />
 ))
@@ -40,7 +42,12 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ ...props }, ref) => (
-  <div ref={ref} className="p-6 pt-0" {...props} />
+  <div 
+    ref={ref} 
+    // Changed: Slate-700 gives a professional dark gray/black feel for body text
+    className="p-6 pt-0 text-slate-700" 
+    {...props} 
+  />
 ))
 CardContent.displayName = "CardContent"
 

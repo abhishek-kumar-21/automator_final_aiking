@@ -12,7 +12,8 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-12 items-center justify-center rounded-md bg-[rgba(255,255,255,0.02)] p-1 border border-[rgba(255,255,255,0.05)]",
+      // Changed: Background to light slate and border to soft gray-blue
+      "inline-flex h-12 items-center justify-center rounded-lg bg-slate-100 p-1 border border-slate-200 shadow-sm",
       className
     )}
     {...props}
@@ -27,7 +28,8 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium font-inter text-[#B6B6B6] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0FAE96] focus-visible:ring-offset-2 focus-visible:ring-offset-[#11011E] disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-[rgba(255,255,255,0.05)] data-[state=active]:text-[#ECF1F0] hover:bg-[rgba(255,255,255,0.03)]",
+      // Changed: Text to dark slate, focus ring to blue, active state to blue text on white
+      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-semibold font-inter text-slate-600 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-sm hover:text-blue-500 hover:bg-slate-50",
       className
     )}
     {...props}
@@ -42,7 +44,8 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      "mt-2 text-[#B6B6B6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0FAE96] focus-visible:ring-offset-2 focus-visible:ring-offset-[#11011E]",
+      // Changed: Text to deep slate (near black) for body content
+      "mt-2 text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
       className
     )}
     {...props}

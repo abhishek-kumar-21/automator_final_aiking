@@ -45,7 +45,6 @@ const JobDescriptionUpload = () => {
   const [showAISelectPopup, setShowAISelectPopup] = useState(false);
   const [expandedAIJDIndex, setExpandedAIJDIndex] = useState<number | null>(null);
 
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
@@ -71,7 +70,8 @@ const JobDescriptionUpload = () => {
             skillsData.learningPath?.[0]?.skills?.[0]?.videos?.length > 0
           ) {
             setTimeout(() => {
-              window.location.href = "/course/dashboard";
+              // window.location.href = "/course/dashboard";
+              window.location.href = "/dashboard/course/learning";
             }, 1000);
           }
         })
@@ -97,7 +97,8 @@ const JobDescriptionUpload = () => {
         console.error('Error fetching URD:', error);
         setError('Failed to load resume. Please try again or paste manually.');
         setTimeout(() => {
-          window.location.href = "/resume2";
+          // window.location.href = "/resume2";
+          window.location.href = "/dashboard/resume2";
         }, 2000);
       }
     };
@@ -135,7 +136,6 @@ const JobDescriptionUpload = () => {
   const handleAddJob = useCallback(() => {
     if (!jobText.trim()) {
       setError('Please paste a job description');
-      console.error('handleAddJob: Job description is empty');
       toast.error('Please paste a job description');
       return false;
     }
@@ -146,10 +146,8 @@ const JobDescriptionUpload = () => {
       setJobTitle('');
       setJobCompany('');
       setError('');
-      console.log('handleAddJob: Job description added successfully');
       return true;
     } catch (error) {
-      console.error('handleAddJob: Error adding job description:', error);
       setError('Failed to add job description');
       toast.error('Failed to add job description');
       return false;
@@ -159,8 +157,6 @@ const JobDescriptionUpload = () => {
   const handleSubmit = useCallback(async () => {
     if (state.jobDescriptions.length < 5) {
       setError('Please add at least 5 job descriptions');
-      console.error('handleSubmit: Insufficient job descriptions:', state.jobDescriptions.length);
-      // toast.error('Please add at least 5 job descriptions');
       return;
     }
 
@@ -170,46 +166,27 @@ const JobDescriptionUpload = () => {
 
     setIsLoading(true);
     try {
-
-      console.log('handleSubmit: Starting analysis with JDs:', state.jobDescriptions.map(jd => ({
-        id: jd.id,
-        title: jd.title,
-        text: jd.text.substring(0, 50) + '...'
-      })));
-
       setFormStep(FormStep.ANALYZING);
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Analysis timed out after 30 seconds')), 30000)
       );
 
-      const result = await Promise.race([analyzeData(), timeoutPromise]);
-      console.log('handleSubmit: Analysis completed successfully, result:', result);
-      // if (!result?.videos?.length) {
-      //   throw new Error('No video data generated from analysis');
-      // }
-
+      await Promise.race([analyzeData(), timeoutPromise]);
       setFormStep(FormStep.RESULTS);
       toast.success('Analysis completed successfully!');
     } catch (error) {
       console.error('handleSubmit: Error during analysis:', error);
-
       const errorObj = error instanceof Error ? error : new Error(String(error));
       let errorMessage = errorObj.message || 'Failed to generate video data';
 
       if (errorObj.message.includes('429')) {
         errorMessage = 'YouTube API quota exceeded. Please try again later or upgrade your plan.';
         toast.error(errorMessage);
-
-        setTimeout(() => {
-          window.location.href = '/upgrade';
-        }, 3000);
+        setTimeout(() => { window.location.href = '/upgrade'; }, 3000);
       } else if (errorObj.message.includes('403') || errorObj.message.includes('invalid')) {
         errorMessage = 'Invalid YouTube API key. Please check your API key.';
         toast.error(errorMessage);
-
-        setTimeout(() => {
-          window.location.href = '/youtube-api';
-        }, 3000);
+        setTimeout(() => { window.location.href = '/youtube-api'; }, 3000);
       } else {
         toast.error(errorMessage);
       }
@@ -219,7 +196,6 @@ const JobDescriptionUpload = () => {
       setIsProcessingJDs(false);
     } finally {
       setIsLoading(false);
-      console.log('handleSubmit: Analysis finished, isLoading set to false');
     }
   }, [apiKey, state.jobDescriptions, analyzeData, setFormStep]);
 
@@ -238,7 +214,6 @@ const JobDescriptionUpload = () => {
 
     try {
       const storedApiKey = localStorage.getItem("api_key");
-
       if (!storedApiKey) {
         setError("Gemini API key not found. Please add it first.");
         setIsFetchingJD(false);
@@ -252,108 +227,55 @@ const JobDescriptionUpload = () => {
           jobTitle: aiJobRole,
           jobType: aiJobType,
           experienceLevel: aiExperienceLevel,
-          apikey: storedApiKey, // ✅ EXACT match with backend
+          apikey: storedApiKey,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
+      if (!response.ok) throw new Error(await response.text());
 
       const data = await response.json();
-
-      let cleaned = data.response
-        .replace(/^```json/, '')
-        .replace(/^```/, '')
-        .replace(/```$/, '')
-        .trim();
-
+      let cleaned = data.response.replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
       const parsed: AIJobDescription[] = JSON.parse(cleaned);
 
-      const validJDs = parsed.filter(
-        (jd) =>
-          jd &&
-          typeof jd.jobTitle === "string" &&
-          typeof jd.responsibilities === "string" &&
-          typeof jd.requiredSkills === "string" &&
-          typeof jd.qualifications === "string"
-      );
+      const validJDs = parsed.filter((jd) => jd && typeof jd.jobTitle === "string");
 
-      if (validJDs.length < 5) {
-        throw new Error(`Only ${validJDs.length} valid job descriptions found`);
-      }
+      if (validJDs.length < 5) throw new Error(`Only ${validJDs.length} valid job descriptions found`);
 
       setAllAIJobDescriptions(validJDs);
-      setAiJobDescriptions(validJDs); // selectable list
-      
+      setAiJobDescriptions(validJDs);
       setShowAISelectPopup(true);
       setShowAIPopup(false);
-      // ❌ DO NOT auto open popup anymore
       toast.success("AI job descriptions fetched. Click 'AI JDs' to review.");
-
-
     } catch (err) {
       console.error(err);
       setError('Failed to fetch job descriptions');
-      setAiJobDescriptions([]);
     } finally {
       setIsFetchingJD(false);
     }
   };
 
   const handleSelectAIJD = (jd: AIJobDescription) => {
-    const fullText = `
-      Job Title:
-      ${jd.jobTitle}
-
-      Responsibilities:
-      ${jd.responsibilities}
-
-      Required Skills:
-      ${jd.requiredSkills}
-
-      Qualifications:
-      ${jd.qualifications}
-      `.trim();
-
+    const fullText = `Job Title: ${jd.jobTitle}\nResponsibilities: ${jd.responsibilities}\nRequired Skills: ${jd.requiredSkills}\nQualifications: ${jd.qualifications}`;
     addJobDescription(fullText, jd.jobTitle, aiCompanyName || "");
-
-    setAiJobDescriptions((prev) =>
-      prev.filter((item) => item !== jd)
-    );
+    setAiJobDescriptions((prev) => prev.filter((item) => item !== jd));
   };
 
   const copyAIJDToClipboard = (jd: AIJobDescription) => {
-    const text = `
-      Job Title:
-      ${jd.jobTitle}
-
-      Responsibilities:
-      ${jd.responsibilities}
-
-      Required Skills:
-      ${jd.requiredSkills}
-
-      Qualifications:
-      ${jd.qualifications}
-    `.trim();
-
+    const text = `Job Title: ${jd.jobTitle}\nResponsibilities: ${jd.responsibilities}\nRequired Skills: ${jd.requiredSkills}\nQualifications: ${jd.qualifications}`;
     navigator.clipboard.writeText(text);
     toast.success("Job description copied!");
   };
 
   if (state.formStep === FormStep.ANALYZING || isProcessingJDs) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#11011E]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-[#0FAE96] mx-auto" />
-          <h2 className="mt-4 text-xl font-raleway font-medium text-[#ECF1F0]">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto" />
+          <h2 className="mt-4 text-xl font-raleway font-medium text-gray-900">
             {isProcessingJDs ? 'Adding Job Descriptions...' : 'Analyzing Job Descriptions...'}
           </h2>
-          <p className="mt-2 text-[#B6B6B6] font-inter">
-            {isProcessingJDs
-              ? 'Please wait while we process your job descriptions.'
-              : 'Please wait while we analyze your job descriptions.'}
+          <p className="mt-2 text-gray-600 font-inter">
+            {isProcessingJDs ? 'Please wait while we process your job descriptions.' : 'Please wait while we analyze your job descriptions.'}
           </p>
         </div>
       </div>
@@ -361,31 +283,30 @@ const JobDescriptionUpload = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#11011E]">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <div className="w-full max-w-4xl mx-auto animate-fade-in py-12 px-4 sm:px-6 lg:px-8">
-        <div className="bg-[rgba(255,255,255,0.02)] shadow-md border border-[rgba(255,255,255,0.05)] rounded-xl overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#7000FF]/25 to-[#FF00C7]/25 blur-[180px] opacity-25 pointer-events-none"></div>
+        <div className="bg-white shadow-xl border border-gray-200 rounded-xl overflow-hidden relative">
           <div className="px-6 py-8 relative">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-2xl font-raleway font-bold text-[#ECF1F0]">🎯 Discover Exactly What You Need to Learn</h2>
+              <h2 className="text-2xl font-raleway font-bold text-gray-900">🎯 Discover Exactly What You Need to Learn</h2>
               <button
                 onClick={() => window.location.href = '/pricing'}
-                className="bg-gradient-to-r from-[#7000FF] to-[#0FAE96] text-white font-semibold text-xs px-3 py-1.5 rounded-full shadow hover:scale-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0FAE96] ml-4"
+                className="bg-blue-600 text-white font-semibold text-xs px-3 py-1.5 rounded-full shadow hover:bg-blue-700 transition ml-4"
               >
                 ⭐ Buy Premium
               </button>
             </div>
-            <div className="mt-4 bg-[#3b796f13] rounded-xl p-4 border border-[#2D2B3F]">
-              <p className="text-[#B6B6B6] font-inter mb-2">
-                Add job descriptions <span className="text-[#0FAE96]">(5 Job Descriptions Recommended)</span>
+            <div className="mt-4 bg-blue-50 rounded-xl p-4 border border-blue-100">
+              <p className="text-gray-700 font-inter mb-2">
+                Add job descriptions <span className="text-blue-600 font-semibold">(5 Job Descriptions Recommended)</span>
               </p>
-              <p className="text-[#B6B6B6] font-inter mb-2">By adding job descriptions, you’ll get:</p>
-              <ul className="text-[#B6B6B6] font-inter space-y-2 list-disc list-inside">
+              <p className="text-gray-600 font-inter mb-2">By adding job descriptions, you’ll get:</p>
+              <ul className="text-gray-600 font-inter space-y-2 list-disc list-inside">
                 <li>Personalized skill roadmap</li>
                 <li>Learning videos for each required skill</li>
               </ul>
               <button
-                className="mt-4 px-4 py-2 bg-[#0FAE96] text-white rounded-lg font-inter hover:bg-[#0da789] transition hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0FAE96] flex items-center justify-center"
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg font-inter hover:bg-blue-700 transition flex items-center justify-center"
                 onClick={handleClick}
               >
                 🎬 Watch Demo
@@ -398,23 +319,19 @@ const JobDescriptionUpload = () => {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-m font-raleway font-medium text-[#ECF1F0] mb-2 block">
-                      Job Title (Optional)
-                    </label>
+                    <label className="text-sm font-raleway font-semibold text-gray-900 mb-2 block">Job Title (Optional)</label>
                     <Input
                       placeholder="e.g. Frontend Developer"
-                      className="w-full text-base font-inter text-[#B6B6B6] bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0FAE96] transition duration-200"
+                      className="w-full text-base font-inter text-gray-900 bg-white border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500"
                       value={jobTitle}
                       onChange={(e) => setJobTitle(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="text-m font-raleway font-medium text-[#ECF1F0] mb-2 block">
-                      Company (Optional)
-                    </label>
+                    <label className="text-sm font-raleway font-semibold text-gray-900 mb-2 block">Company (Optional)</label>
                     <Input
                       placeholder="e.g. Acme Inc."
-                      className="w-full text-base font-inter text-[#B6B6B6] bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0FAE96] transition duration-200"
+                      className="w-full text-base font-inter text-gray-900 bg-white border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500"
                       value={jobCompany}
                       onChange={(e) => setJobCompany(e.target.value)}
                     />
@@ -422,35 +339,29 @@ const JobDescriptionUpload = () => {
                 </div>
 
                 <div>
-                  <label className="text-m font-raleway font-medium text-[#ECF1F0] mb-2 block">
-                    Job Description*
-                  </label>
+                  <label className="text-sm font-raleway font-semibold text-gray-900 mb-2 block">Job Description*</label>
                   <Textarea
                     placeholder="Paste the job description here..."
-                    className="min-h-[200px] w-full text-base font-inter text-[#B6B6B6] bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0FAE96] transition duration-200"
+                    className="min-h-[200px] w-full text-base font-inter text-gray-900 bg-white border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500"
                     value={jobText}
-                    onChange={(e) => {
-                      setJobText(e.target.value);
-                      setError('');
-                    }}
+                    onChange={(e) => { setJobText(e.target.value); setError(''); }}
                   />
                 </div>
 
                 <div className="w-full flex flex-col sm:flex-row justify-center items-center gap-2 mt-4">
                   <Button
                     onClick={() => setShowAIPopup(true)}
-                    className="w-full sm:w-[200px] bg-[#7000FF] text-white font-raleway font-semibold px-6 py-3 rounded-md transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#7000FF] flex items-center justify-center"
+                    className="w-full sm:w-[200px] bg-blue-700 text-white font-raleway font-semibold px-6 py-3 rounded-md hover:bg-blue-800 transition flex items-center justify-center"
                     disabled={isProcessingJDs}
                   >
                     <Sparkles className="mr-2 h-4 w-4" />
                     <span>Get Auto-JD</span>
                   </Button>
 
-                  {/* ✅ NEW BUTTON */}
                   {allAIJobDescriptions.length > 0 && (
                     <Button
                       onClick={() => setShowAISelectPopup(true)}
-                      className="w-full sm:w-[200px] bg-[#1A1A2E] border border-[#0FAE96] text-[#0FAE96] font-raleway font-semibold px-6 py-3 rounded-md transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0FAE96] flex items-center justify-center"
+                      className="w-full sm:w-[200px] bg-white border border-blue-600 text-blue-600 font-raleway font-semibold px-6 py-3 rounded-md hover:bg-blue-50 transition flex items-center justify-center"
                     >
                       🤖 AI JDs ({aiJobDescriptions.length})
                     </Button>
@@ -458,7 +369,7 @@ const JobDescriptionUpload = () => {
 
                   <Button
                     onClick={handleAddJob}
-                    className="w-full sm:w-[200px] bg-[#0FAE96] text-white font-raleway font-semibold px-6 py-3 rounded-md transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0FAE96] flex items-center justify-center"
+                    className="w-full sm:w-[200px] bg-blue-600 text-white font-raleway font-semibold px-6 py-3 rounded-md hover:bg-blue-700 transition flex items-center justify-center"
                     disabled={isProcessingJDs}
                   >
                     <PlusCircle className="mr-2 h-4 w-4" />
@@ -466,29 +377,24 @@ const JobDescriptionUpload = () => {
                   </Button>
                 </div>
 
-                {error && <p className="text-[#FF6B6B] text-sm font-inter mt-2">{error}</p>}
+                {error && <p className="text-red-500 text-sm font-inter mt-2">{error}</p>}
               </div>
 
               {state.jobDescriptions.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-raleway font-medium text-[#ECF1F0] mb-4">Added Job Descriptions:</h3>
+                  <h3 className="text-lg font-raleway font-semibold text-gray-900 mb-4">Added Job Descriptions:</h3>
                   <div className="space-y-4">
                     {state.jobDescriptions.map((job) => (
-                      <div
-                        key={job.id}
-                        className="border border-[rgba(255,255,255,0.05)] rounded-lg p-5 flex justify-between items-start"
-                      >
+                      <div key={job.id} className="border border-gray-200 bg-gray-50 rounded-lg p-5 flex justify-between items-start">
                         <div>
-                          <h4 className="font-raleway font-medium text-[#ECF1F0] text-base">
+                          <h4 className="font-raleway font-bold text-gray-900 text-base">
                             {job.title || 'Untitled Position'}
                             {job.company && ` at ${job.company}`}
                           </h4>
-                          <p className="text-sm text-[#B6B6B6] font-inter line-clamp-2 mt-2">
-                            {job.text}
-                          </p>
+                          <p className="text-sm text-gray-600 font-inter line-clamp-2 mt-2">{job.text}</p>
                         </div>
                         <Button
-                          className="text-[#0FAE96] font-inter text-sm h-10 px-3 transition duration-200 hover:bg-[rgba(255,255,255,0.05)] hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0FAE96]"
+                          className="text-red-500 font-inter text-sm h-10 px-3 hover:bg-red-50"
                           onClick={() => removeJobDescription(job.id)}
                           disabled={isProcessingJDs}
                         >
@@ -501,9 +407,9 @@ const JobDescriptionUpload = () => {
               )}
             </div>
           </div>
-          <div className="bg-[#11011E] px-6 py-6 flex justify-between">
+          <div className="bg-gray-100 px-6 py-6 flex justify-between">
             <Button
-              className="bg-transparent text-[#0FAE96] font-raleway font-semibold text-base px-6 py-3 rounded-md h-10 transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0FAE96]"
+              className="bg-transparent text-blue-600 border border-blue-600 font-raleway font-semibold text-base px-6 py-3 rounded-md hover:bg-blue-50 transition"
               onClick={() => setFormStep(FormStep.RESUME)}
               disabled={isProcessingJDs}
             >
@@ -511,7 +417,7 @@ const JobDescriptionUpload = () => {
               Back
             </Button>
             <Button
-              className="bg-[#0FAE96] text-white font-raleway font-semibold text-base px-6 py-3 rounded-md h-10 transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0FAE96] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="bg-blue-600 text-white font-raleway font-semibold text-base px-6 py-3 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
               onClick={handleSubmit}
               disabled={state.jobDescriptions.length < 5 || state.isAnalyzing || isLoading || isProcessingJDs}
             >
@@ -531,230 +437,126 @@ const JobDescriptionUpload = () => {
       </div>
 
       {showAIPopup && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-2 sm:px-4">
-          <div className="bg-[#1A1A2E] rounded-2xl p-8 w-full max-w-xl relative">
-
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-2 sm:px-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-xl relative shadow-2xl border border-gray-200">
             <Button
-              className="absolute top-4 right-4 text-[#0FAE96] hover:bg-[rgba(255,255,255,0.05)]"
-              onClick={() => {
-                setShowAIPopup(false);
-                setAiJobRole('');
-                setAiCompanyName('');
-                setAiExperienceLevel('Mid-Level');
-                setAiJobType('Fresher');
-                setAiJobDescriptions([]);
-                setError('');
-              }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              onClick={() => setShowAIPopup(false)}
             >
               <X className="h-5 w-5" />
             </Button>
-            <h3 className="text-xl font-raleway font-medium text-[#ECF1F0] mb-6">
-              Generate Job Description with AI
-            </h3>
-
+            <h3 className="text-xl font-raleway font-bold text-gray-900 mb-6">Generate Job Description with AI</h3>
             <div className="space-y-6">
               <div>
-                <label className="text-base font-raleway font-medium text-[#ECF1F0] mb-2 block">
-                  Job Role and Subject*
-                </label>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">Job Role and Subject*</label>
                 <Input
                   placeholder="e.g. Node.js Developer, JavaScript"
-                  className="w-full text-base font-inter text-[#B6B6B6] bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0FAE96]"
+                  className="w-full text-gray-900 border-gray-300"
                   value={aiJobRole}
-                  onChange={(e) => {
-                    setAiJobRole(e.target.value);
-                    setError('');
-                  }}
-                  required
+                  onChange={(e) => { setAiJobRole(e.target.value); setError(''); }}
                 />
               </div>
-
               <div>
-                <label className="text-base font-raleway font-medium text-[#ECF1F0] mb-2 block">
-                  Company Name (Optional)
-                </label>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">Company Name (Optional)</label>
                 <Input
                   placeholder="e.g. Acme Inc."
-                  className="w-full text-base font-inter text-[#B6B6B6] bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-lg px-4 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0FAE96]"
+                  className="w-full text-gray-900 border-gray-300"
                   value={aiCompanyName}
                   onChange={(e) => setAiCompanyName(e.target.value)}
                 />
               </div>
-
               <div>
-                <label className="text-base font-raleway font-medium text-[#ECF1F0] mb-2 block">
-                  Experience Level*
-                </label>
-                <Select
-                  value={aiExperienceLevel}
-                  onValueChange={setAiExperienceLevel}
-                >
-                  <SelectTrigger className="w-full text-base font-inter text-[#ECF1F0] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg px-4 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0FAE96]">
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">Experience Level*</label>
+                <Select value={aiExperienceLevel} onValueChange={setAiExperienceLevel}>
+                  <SelectTrigger className="w-full border-gray-300 text-gray-900">
                     <SelectValue placeholder="Select experience level" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1A1A2E] text-[#ECF1F0] border-[rgba(255,255,255,0.1)]">
-                    <SelectItem value="Beginner" className="text-base py-2">Beginner</SelectItem>
-                    <SelectItem value="Mid-Level" className="text-base py-2">Mid-Level</SelectItem>
-                    <SelectItem value="Expert" className="text-base py-2">Expert</SelectItem>
+                  <SelectContent className="bg-white text-gray-900">
+                    <SelectItem value="Beginner">Beginner</SelectItem>
+                    <SelectItem value="Mid-Level">Mid-Level</SelectItem>
+                    <SelectItem value="Expert">Expert</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
               <div>
-                <label className="text-base font-raleway font-medium text-[#ECF1F0] mb-2 block">
-                  Job Type*
-                </label>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">Job Type*</label>
                 <Select value={aiJobType} onValueChange={setAiJobType}>
-                  <SelectTrigger className="w-full text-base font-inter text-[#ECF1F0] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg px-4 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0FAE96]">
+                  <SelectTrigger className="w-full border-gray-300 text-gray-900">
                     <SelectValue placeholder="Select job type" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1A1A2E] text-[#ECF1F0] border-[rgba(255,255,255,0.1)]">
-                    <SelectItem value="Intern" className="text-base py-2">Intern</SelectItem>
-                    <SelectItem value="Fresher" className="text-base py-2">Fresher</SelectItem>
-                    <SelectItem value="Junior" className="text-base py-2">Junior</SelectItem>
-                    <SelectItem value="Senior" className="text-base py-2">Senior</SelectItem>
+                  <SelectContent className="bg-white text-gray-900">
+                    <SelectItem value="Intern">Intern</SelectItem>
+                    <SelectItem value="Fresher">Fresher</SelectItem>
+                    <SelectItem value="Junior">Junior</SelectItem>
+                    <SelectItem value="Senior">Senior</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
               <Button
                 onClick={handleFetchAIJD}
-                className="w-full bg-[#0FAE96] text-white font-raleway font-semibold text-base px-6 py-3 rounded-md transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0FAE96] flex items-center justify-center"
+                className="w-full bg-blue-600 text-white font-bold py-3 hover:bg-blue-700 flex items-center justify-center"
                 disabled={isFetchingJD}
               >
-                {isFetchingJD ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Fetching...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    <span>Get Job Descriptions</span>
-                  </>
-                )}
+                {isFetchingJD ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                Get Job Descriptions
               </Button>
-              {error && <p className="text-[#FF6B6B] text-sm font-inter mt-2">{error}</p>}
             </div>
           </div>
         </div>
       )}
 
       {showAISelectPopup && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-2 sm:px-4">
-          <div
-            className="bg-[#1A1A2E] rounded-2xl w-full max-w-3xl h-[85vh] sm:h-[80vh] flex flex-col shadow-xl"
-          >
-            {/* 🔒 FIXED HEADER */}
-            <div
-              className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-white/10 shrink-0"
-            >
-              <h3 className="text-lg sm:text-xl font-raleway font-medium text-[#ECF1F0]">
-                Select Job Descriptions
-              </h3>
-              <Button
-                className="text-[#0FAE96] hover:bg-white/5"
-                onClick={() => setShowAISelectPopup(false)}
-              >
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-2 sm:px-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-3xl h-[85vh] sm:h-[80vh] flex flex-col shadow-2xl border border-gray-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+              <h3 className="text-lg font-bold text-gray-900">Select Job Descriptions</h3>
+              <Button className="text-gray-400 hover:text-gray-600" onClick={() => setShowAISelectPopup(false)}>
                 <X className="h-5 w-5" />
               </Button>
             </div>
-
-            {/* 🔄 SCROLLABLE JD LIST */}
-            <div
-              className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 space-y-4 scroll-bar"
-            >
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
               {aiJobDescriptions.map((jd, index) => {
                 const isExpanded = expandedAIJDIndex === index;
-
                 return (
-                  <div
-                    key={`ai-jd-${index}`}
-                    className="border border-white/10 rounded-xl bg-white/[0.02] overflow-hidden"
-                  >
-                    {/* HEADER ROW */}
+                  <div key={`ai-jd-${index}`} className="border border-gray-200 rounded-xl bg-gray-50 overflow-hidden">
                     <div
-                      className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 pt-4 py-4 cursor-pointer border-b 
-                        ${isExpanded ? "border-white/10" : "border-transparent"}`}
-                      onClick={() =>
-                        setExpandedAIJDIndex(isExpanded ? null : index)
-                      }
+                      className={`flex items-center justify-between p-4 cursor-pointer ${isExpanded ? "border-b border-gray-200" : ""}`}
+                      onClick={() => setExpandedAIJDIndex(isExpanded ? null : index)}
                     >
-                      <span className="text-[#ECF1F0] font-medium text-sm sm:text-base">
-                        {jd.jobTitle}
-                      </span>
-
-                      {/* ADD BUTTON */}
+                      <span className="text-gray-900 font-bold">{jd.jobTitle}</span>
                       <Button
-                        className="bg-[#0FAE96] text-white h-8 px-4 text-sm rounded-lg self-start sm:self-auto"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectAIJD(jd);
-                        }}
+                        className="bg-blue-600 text-white h-8 px-4 text-sm"
+                        onClick={(e) => { e.stopPropagation(); handleSelectAIJD(jd); }}
                       >
                         Add
                       </Button>
                     </div>
-
-                    {/* EXPANDABLE CONTENT */}
-                    <div
-                      className={`overflow-hidden transition-[max-height,opacity] duration-500 ease-out
-                  ${isExpanded ? "max-h-[1200px] opacity-100 pt-4" : "max-h-0 opacity-0 pt-0"}
-                `}
-                    >
-                      <div className="px-4 pb-6 space-y-6 text-sm text-[#B6B6B6]">
+                    {isExpanded && (
+                      <div className="p-4 space-y-4 text-sm text-gray-700">
                         <div>
-                          <h4 className="text-[#ECF1F0] text-xs uppercase tracking-wide mb-2">
-                            Responsibilities
-                          </h4>
-                          <pre className="whitespace-pre-wrap leading-relaxed">
-                            {jd.responsibilities}
-                          </pre>
+                          <h4 className="text-gray-900 font-bold text-xs uppercase mb-1">Responsibilities</h4>
+                          <pre className="whitespace-pre-wrap font-inter">{jd.responsibilities}</pre>
                         </div>
-
                         <div>
-                          <h4 className="text-[#ECF1F0] text-xs uppercase tracking-wide mb-2">
-                            Required Skills
-                          </h4>
-                          <pre className="whitespace-pre-wrap leading-relaxed">
-                            {jd.requiredSkills}
-                          </pre>
+                          <h4 className="text-gray-900 font-bold text-xs uppercase mb-1">Required Skills</h4>
+                          <pre className="whitespace-pre-wrap font-inter">{jd.requiredSkills}</pre>
                         </div>
-
-                        <div>
-                          <h4 className="text-[#ECF1F0] text-xs uppercase tracking-wide mb-2">
-                            Qualifications
-                          </h4>
-                          <pre className="whitespace-pre-wrap leading-relaxed">
-                            {jd.qualifications}
-                          </pre>
-                        </div>
-
-                        {/* COPY BUTTON */}
                         <Button
-                          className="bg-[#7000FF] text-white h-9 px-5 rounded-lg text-sm flex justify-center items-center gap-1"
+                          className="bg-blue-700 text-white h-9 px-5 text-sm flex gap-2"
                           onClick={() => copyAIJDToClipboard(jd)}
                         >
-                          <Copy className="h-4 w-4 mr-2" />
-                          Copy Job Description
+                          <Copy className="h-4 w-4" /> Copy Job Description
                         </Button>
                       </div>
-                    </div>
+                    )}
                   </div>
                 );
               })}
-
-              {aiJobDescriptions.length === 0 && (
-                <p className="text-[#B6B6B6] text-center mt-8">
-                  All job descriptions have been added.
-                </p>
-              )}
+              {aiJobDescriptions.length === 0 && <p className="text-gray-500 text-center mt-8">All job descriptions have been added.</p>}
             </div>
           </div>
         </div>
       )}
-
-
     </div>
   );
 };

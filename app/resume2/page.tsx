@@ -203,7 +203,8 @@ const Resume: React.FC = () => {
         console.error("Failed to extract/save marketing data:", err);
       }
 
-      setTimeout(() => { window.location.href = "/course/jobdescription" }, 3000);
+      // setTimeout(() => { window.location.href = "/course/jobdescription" }, 3000);
+      setTimeout(() => { window.location.href = "dashboard/course/jobdescription" }, 3000);
     } catch (err) {
       toast.error(
         err instanceof Error

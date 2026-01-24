@@ -18,16 +18,16 @@ const ResumeUpload = () => {
   const [error, setError] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoadingResume, setIsLoadingResume] = useState(false);
-  const [isLoadingContinue, setIsLoadingContinue] = useState(false); // New state for Continue button
+  const [isLoadingContinue, setIsLoadingContinue] = useState(false); 
   const [apiKey, setApiKey] = useState<string | null>(null);
   const router = useRouter();
   const auth = getAuth();
 
-  // Fetch Gemini API key on mount
+  // Logic remains untouched
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        // console.log("User signed in:", currentUser);
+        // User signed in
       } else {
         toast.error("You need to be signed in to access this page!");
         setTimeout(() => {
@@ -37,7 +37,7 @@ const ResumeUpload = () => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [auth]);
 
   useEffect(() => {
     const fetchApiKey = async () => {
@@ -46,7 +46,6 @@ const ResumeUpload = () => {
         try {
           const key = await fetchGeminiApiKey(user.uid);
           setApiKey(key);
-          // console.log('Gemini API key fetched:', key ? 'Present' : 'Not found');
         } catch (error) {
           console.error('Error fetching Gemini API key:', error);
           setError('Failed to fetch API key. Manual resume input is still available.');
@@ -56,7 +55,6 @@ const ResumeUpload = () => {
     fetchApiKey();
   }, [auth.currentUser]);
 
-  // Load resume from URD
   const handleLoadResume = async () => {
     setIsLoadingResume(true);
     setError('');
@@ -69,7 +67,6 @@ const ResumeUpload = () => {
     try {
       const urd = await fetchUserResumeData(user.uid);
       if (urd) {
-        // console.log('URD fetched:', urd);
         setResumeText(urd);
         setResume(urd);
         setIsSubmitted(true);
@@ -80,7 +77,8 @@ const ResumeUpload = () => {
       console.error('Error fetching URD:', error);
       setError('Failed to load resume. Please try again or paste manually.');
       setTimeout(() => {
-        window.location.href = "/resume2";
+        // window.location.href = "/resume2";
+        window.location.href = "dashboard/resume2";
       }, 2000);
     } finally {
       setIsLoadingResume(false);
@@ -92,53 +90,51 @@ const ResumeUpload = () => {
       setError('Please paste your resume text or load from profile.');
       return;
     }
-    // console.log('Submitting resume:', resumeText);
     setResume(resumeText);
-    setIsLoadingContinue(true); // Set loading state for Continue button
+    setIsLoadingContinue(true);
     setIsSubmitted(true);
   };
 
-  // Navigate after resume is set
   useEffect(() => {
     if (isSubmitted && state.resume?.text === resumeText && resumeText.trim()) {
-      console.log('Resume set, navigating to job descriptions');
       setFormStep(FormStep.JOB_DESCRIPTIONS);
       setTimeout(() => {
-        router.push('/course/jobdescription');
-        setIsLoadingContinue(false); // Reset loading state after navigation
+        // router.push('/course/jobdescription');
+        router.push('dashboard/course/jobdescription');
+        setIsLoadingContinue(false);
       }, 2000);
       setIsSubmitted(false);
     }
   }, [isSubmitted, state.resume, resumeText, setFormStep, router]);
 
-  // Debug state changes
-  useEffect(() => {
-    // console.log('ResumeUpload state.resume:', state.resume);
-  }, [state.resume]);
-
   return (
-    <div className="min-h-screen flex flex-col bg-[#11011E]">
+    <div className="min-h-screen flex flex-col bg-slate-50"> {/* Background changed to light gray */}
       <div className="w-full max-w-4xl mx-auto animate-fade-in py-8 px-4 sm:px-6 lg:px-8">
-        <div className="bg-[rgba(255,255,255,0.02)] shadow-lg border-[rgba(255,255,255,0.05)] rounded-lg overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#7000FF]/25 to-[#FF00C7]/25 blur-[180px] opacity-25 pointer-events-none"></div>
+        <div className="bg-white shadow-xl border border-slate-200 rounded-lg overflow-hidden relative"> {/* Card styling updated */}
+          
+          {/* Subtle light blue gradient glow */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-indigo-100 blur-[180px] opacity-40 pointer-events-none"></div>
+          
           <div className="px-6 py-8 relative">
-            <h2 className="text-2xl font-raleway font-bold text-[#ECF1F0]">Upload Your Resume</h2>
-            <p className="text-[#B6B6B6] font-inter mt-2">Copy and paste the text from your resume or load from your profile</p>
+            <h2 className="text-2xl font-raleway font-bold text-slate-900">Upload Your Resume</h2> {/* Text changed to dark */}
+            <p className="text-slate-600 font-inter mt-2">Copy and paste the text from your resume or load from your profile</p>
           </div>
-          <div className="px-6 sm:px-8 pb-8">
+
+          <div className="px-6 sm:px-8 pb-8 relative">
             <div className="space-y-6">
               <div className="space-y-3">
                 <Textarea
                   placeholder="Paste your resume text here..."
-                  className="min-h-[300px] w-full text-base font-inter text-[#B6B6B6] bg-[rgba(255,255,255,0.02)] border-[rgba(255,255,255,0.05)] rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0FAE96] transition duration-200"
+                  className="min-h-[300px] w-full text-base font-inter text-slate-900 bg-white border-slate-300 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition duration-200 placeholder:text-slate-400"
                   value={resumeText}
                   onChange={(e) => {
                     setResumeText(e.target.value);
                     setError('');
                   }}
                 />
+                
                 <Button
-                  className="bg-[#7000FF] text-white font-raleway font-semibold text-base px-6 py-2 rounded-md h-10 transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#7000FF]"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-raleway font-semibold text-base px-6 py-2 rounded-md h-10 transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
                   onClick={handleLoadResume}
                   disabled={isLoadingResume}
                 >
@@ -157,11 +153,12 @@ const ResumeUpload = () => {
                     </>
                   )}
                 </Button>
-                {error && <p className="text-[#FF6B6B] text-sm font-inter">{error}</p>}
+                {error && <p className="text-red-500 text-sm font-inter">{error}</p>}
               </div>
-              <div className="bg-[#11011E] p-4 rounded-md">
-                <h4 className="font-raleway font-medium text-[#ECF1F0] mb-2">Tips for best results:</h4>
-                <ul className="text-sm text-[#B6B6B6] font-inter space-y-1">
+
+              <div className="bg-blue-50 border border-blue-100 p-4 rounded-md"> {/* Tips box changed to light blue */}
+                <h4 className="font-raleway font-semibold text-blue-900 mb-2">Tips for best results:</h4>
+                <ul className="text-sm text-blue-800 font-inter space-y-1 opacity-90">
                   <li>• Include all relevant technical skills and technologies</li>
                   <li>• Add certifications and education details</li>
                   <li>• Mention projects you've worked on and your role</li>
@@ -169,15 +166,17 @@ const ResumeUpload = () => {
               </div>
             </div>
           </div>
-          <div className="bg-[#11011E] px-6 py-6 flex justify-between">
+
+          <div className="bg-slate-50 border-t border-slate-100 px-6 py-6 flex justify-between relative">
             <Button
-              className="bg-transparent text-[#0FAE96] font-raleway font-semibold text-base px-6 py-3 rounded-md h-10 border-[rgba(255,255,255,0.05)] transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0FAE96]"
+              className="bg-transparent text-blue-600 hover:text-blue-700 font-raleway font-semibold text-base px-6 py-3 rounded-md h-10 border border-slate-200 transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
               onClick={() => setFormStep(FormStep.WELCOME)}
             >
               <ArrowLeft className="mr-2 h-4 w-4 inline" /> Back
             </Button>
+            
             <Button
-              className="bg-[#0FAE96] text-white font-raleway font-semibold text-base px-6 py-2 rounded-md h-10 transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0FAE96]"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-raleway font-semibold text-base px-6 py-2 rounded-md h-10 transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
               onClick={handleSubmit}
               disabled={isLoadingResume || isLoadingContinue}
             >

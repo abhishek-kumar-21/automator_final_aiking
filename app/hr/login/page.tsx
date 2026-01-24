@@ -7,11 +7,17 @@ import { toast } from "react-toastify";
 import { getDatabase, ref, get, set } from "firebase/database";
 import Link from 'next/link';
 import SignInWithGoogle from "../loginwithGoogle/SignInWithGoogle"
+// Import icons for password toggle
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function HRLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // New state for toggling password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  
   const db = getDatabase(app);
 
   async function notifyExtensionOnLogin(uid: unknown) {
@@ -50,23 +56,22 @@ function HRLogin() {
         localStorage.setItem("UIDforHR", user.uid);
         localStorage.setItem("IsLoginAsHR", "true");
 
-        //GET REFERRAL IF THERE IN COOKIE
-
+        // GET REFERRAL IF THERE IN COOKIE
         const getReferralCodeFromCookie = () => {
           const cookie = document.cookie.split('; ').find(row => row.startsWith('referral='));
           return cookie ? cookie.split('=')[1] : null;
         };
         const referralCode = getReferralCodeFromCookie()
-        //** SAVE REFERAL CODE IN DATABASE  */
+        
+        // SAVE REFERAL CODE IN DATABASE
         const currentDate = new Date();
         const formattedDateTime = currentDate.toISOString().replace("T", " ").split(".")[0];
-        const currentUser = auth?.currentUser?.uid;
-
+        
         if (referralCode) {
           console.log("Save in database/firebase")
           console.log("login", user.uid)
           const newDocRef = ref(db, `/referrals/${referralCode}/${user.uid}`);
-          console.log(newDocRef, typeof (newDocRef), "referrals");
+          
           get(newDocRef).then((snapshot) => {
             if (!snapshot.exists()) {
               // If the referral code doesn't exist, create a new entry
@@ -74,7 +79,7 @@ function HRLogin() {
                 signupDate: formattedDateTime,
                 amount: 0,
               }).then(() => {
-
+                 // Success handling if needed
               })
             }
           })
@@ -97,19 +102,17 @@ function HRLogin() {
         console.log(apiKey, "key suman")
 
         toast.success("HR logged in successfully", { position: "top-center" });
+        
         if (apiKey) {
           setTimeout(() => {
             window.location.href = "/hr"
           })
-
         }
         else {
           setTimeout(() => {
             window.location.href = "/hr/gemini";
           }, 2000)
         }
-        // Direct HR to /gemini only
-        // window.location.href = "/hr/gemini";
       } else {
         toast.error("Email is not verified. Please verify your email and try again!", {
           position: "bottom-center",
@@ -124,40 +127,110 @@ function HRLogin() {
   };
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#11011E] via-[#35013E] to-[#11011E] p-6">
-      <div className="w-full max-w-md p-8 bg-[rgba(255,255,255,0.05)] rounded-2xl shadow-2xl border border-[rgba(255,255,255,0.1)]">
-        <h1 className="text-2xl font-raleway font-semibold mb-6 text-center animate-slideDown text-[#ECF1F0]">HR Sign In</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-            className="w-full p-3 border border-gray-600 rounded-lg bg-[#1A1A2E] text-white focus:ring-2 focus:ring-[#0FAE96]"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
-            className="w-full p-3 border border-gray-600 rounded-lg bg-[#1A1A2E] text-white focus:ring-2 focus:ring-[#0FAE96]"
-          />
-          <div className="text-right">
-            <Link href="/hr/passwordreset" className="text-[#0FAE96] hover:text-[#FF00C7] transition-colors duration-200">Forgot password?</Link>
+    // Updated Main Container: White/Gray Theme
+    <main className="flex items-center justify-center min-h-screen bg-[#F9FAFB] p-4 sm:p-6">
+      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
+        
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">HR Sign In</h1>
+          <p className="text-gray-500 text-sm">Welcome back! Please enter your details.</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Email Input */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">Email Address</label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            />
           </div>
-          <button type="submit" disabled={loading} className="w-full bg-[#0FAE96] text-white p-3 rounded-lg hover:opacity-90 transition duration-300 transform hover:scale-105">
-            {loading ? "Signing in..." : "Sign in"}
+
+          {/* Password Input with Eye Toggle */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"} // Dynamic type based on state
+                placeholder="Enter your password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                // Added pr-12 to prevent text overlap with icon
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+              >
+                {showPassword ? (
+                  <FaEyeSlash size={20} />
+                ) : (
+                  <FaEye size={20} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Forgot Password Link */}
+          <div className="text-right">
+            <Link 
+              href="/hr/passwordreset" 
+              className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors duration-200"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
+          {/* Submit Button */}
+          <button 
+            type="submit" 
+            disabled={loading} 
+            className="w-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-semibold p-3.5 rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Signing in...</span>
+              </div>
+            ) : (
+              "Sign in"
+            )}
           </button>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          {/* Google Sign In */}
           <div className="flex justify-center">
             <SignInWithGoogle />
           </div>
         </form>
-        <p className="text-center text-gray-400 mt-4">
-          Don&apos;t have an account? <Link href="/hr/signUp" className="text-[#0FAE96] hover:text-[#FF00C7] transition-colors duration-200">Sign up</Link>
+
+        {/* Footer */}
+        <p className="text-center text-sm text-gray-600 mt-8">
+          Don&apos;t have an account?{" "}
+          <Link 
+            href="/hr/signUp" 
+            className="font-semibold text-blue-600 hover:text-blue-700 transition-colors duration-200"
+          >
+            Sign up
+          </Link>
         </p>
       </div>
     </main>

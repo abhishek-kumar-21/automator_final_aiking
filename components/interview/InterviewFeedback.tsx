@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle2, Star, Download, Video } from "lucide-react";
-// import type { SessionType } from "@/pages/Interview";
 import { useToast } from "@/components/ui/use-toast";
 
 interface SessionType {
@@ -36,8 +35,8 @@ export const InterviewFeedback: React.FC<InterviewFeedbackProps> = ({ session })
 
   if (!session || !session.feedback) {
     return (
-      <div className="p-8 text-center">
-        <p className="text-gray-500">
+      <div className="p-8 text-center bg-white rounded-xl border border-slate-200">
+        <p className="text-slate-500 font-inter">
           No feedback available. Please complete an interview session first.
         </p>
       </div>
@@ -49,49 +48,22 @@ export const InterviewFeedback: React.FC<InterviewFeedbackProps> = ({ session })
     improvements: session.feedback.improvements || [],
     overallScore: session.feedback.overallScore || 0,
     transcript: session.feedback.transcript || session.transcripts || [],
-    recording: session.recordings?.[0] || session.feedback.recording?.[0], // Use recordings first, fallback to feedback.recording
+    recording: session.recordings?.[0] || session.feedback.recording?.[0],
   };
 
   const { strengths, improvements, overallScore, transcript, recording } = feedback;
 
   const downloadTranscript = () => {
     if (!transcript) return;
-
-    const transcriptText = transcript
-      .map(
-        (item, index) =>
-          `Q${index + 1}: ${item.question}\n\nA: ${item.answer}\n\n`
-      )
-      .join("---\n\n");
-
-    const feedbackText = `
-INTERVIEW FEEDBACK
-=================
-
-Overall Score: ${overallScore}/10
-
-Strengths:
-${strengths.map((s) => `- ${s}`).join("\n")}
-
-Areas for Improvement:
-${improvements.map((i) => `- ${i}`).join("\n")}
-`;
-
-    const recordingsText = recording
-      ? `
-Recording:
-- Interview Video: ${recording}
-`
-      : "";
-
-    const fullText = `INTERVIEW TRANSCRIPT\n===================\n\n${transcriptText}\n\n${feedbackText}${recordingsText}`;
+    const transcriptText = transcript.map((item, index) => `Q${index + 1}: ${item.question}\n\nA: ${item.answer}\n\n`).join("---\n\n");
+    const feedbackText = `\nINTERVIEW FEEDBACK\n=================\n\nOverall Score: ${overallScore}/10\n\nStrengths:\n${strengths.map((s) => `- ${s}`).join("\n")}\n\nAreas for Improvement:\n${improvements.map((i) => `- ${i}`).join("\n")}\n`;
+    const fullText = `INTERVIEW TRANSCRIPT\n===================\n\n${transcriptText}\n\n${feedbackText}`;
 
     const blob = new Blob([fullText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `interview-feedback-${new Date().toISOString().split("T")[0]
-      }.txt`;
+    a.download = `interview-feedback-${new Date().toISOString().split("T")[0]}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -100,130 +72,95 @@ Recording:
 
   const downloadVideo = async () => {
     if (!recording) return;
-
     try {
-      toast({
-        title: "Starting Download",
-        description: "Preparing your video file...",
-      });
-
-      // Use our own API proxy to fetch the file, bypassing CORS issues
+      toast({ title: "Starting Download", description: "Preparing your video file..." });
       const proxyUrl = `/api/proxy-download?url=${encodeURIComponent(recording)}`;
-
       const response = await fetch(proxyUrl);
-      if (!response.ok) throw new Error(`Download failed: ${response.statusText}`);
-
+      if (!response.ok) throw new Error(`Download failed`);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-
       const a = document.createElement("a");
       a.href = url;
-      a.download = `interview-recording-${new Date().toISOString().split("T")[0]}.webm`;
+      a.download = `interview-recording.webm`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-
-      setTimeout(() => URL.revokeObjectURL(url), 100);
-
-      toast({
-        title: "Download Complete",
-        description: "Your recording has been downloaded.",
-      });
     } catch (err) {
-      console.warn("Proxy download failed, trying direct link fallback:", err);
-
-      // Fallback: Open in new tab
-      const a = document.createElement("a");
-      a.href = recording;
-      a.target = "_blank";
-      a.download = `interview-recording-${new Date().toISOString().split("T")[0]}.webm`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      toast({
-        title: "Download Fallback",
-        description: "Direct download failed. Opened video in a new tab - you can save it from there.",
-        variant: "destructive",
-      });
+      toast({ title: "Download Error", variant: "destructive" });
     }
   };
 
   return (
-    <div className="relative">
-      <div className="absolute -top-20 -left-20 w-64 h-64 bg-[#7000FF] blur-[180px] opacity-25 rounded-full pointer-events-none"></div>
-      <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#FF00C7] blur-[180px] opacity-25 rounded-full pointer-events-none"></div>
+    <div className="relative bg-slate-50/50 p-1">
+      {/* Light Theme Background Blurs */}
+      <div className="absolute -top-20 -left-20 w-64 h-64 bg-blue-500 blur-[180px] opacity-10 rounded-full pointer-events-none"></div>
+      <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-indigo-500 blur-[180px] opacity-10 rounded-full pointer-events-none"></div>
 
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold font-raleway text-[#ECF1F0]">Interview Feedback</h2>
-        <div className="flex space-x-3">
-          <Button
-            variant="outline"
-            className="flex items-center bg-[rgba(255,255,255,0.02)] border-[rgba(255,255,255,0.05)] text-[#ECF1F0] hover:bg-[rgba(255,255,255,0.05)] transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0FAE96]"
-            onClick={downloadTranscript}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Save Transcript
-          </Button>
-        </div>
+      <div className="flex justify-between items-center mb-8 relative z-10">
+        <h2 className="text-2xl md:text-3xl font-bold font-raleway text-slate-900">Interview Feedback</h2>
+        <Button
+          variant="outline"
+          className="flex items-center border-slate-200 text-slate-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
+          onClick={downloadTranscript}
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Save Transcript
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-lg overflow-hidden">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 relative z-10">
+        <Card className="bg-white border-slate-200 shadow-sm rounded-xl overflow-hidden">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-inter text-[#B6B6B6]">
-              Overall Score
-            </CardTitle>
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-slate-500">Overall Score</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-end space-x-2">
-              <span className="text-4xl font-bold font-raleway text-[#ECF1F0]">{overallScore}</span>
-              <span className="text-xl text-[#B6B6B6] font-inter">/10</span>
+            <div className="flex items-end space-x-1">
+              <span className="text-4xl font-bold font-raleway text-blue-600">{overallScore}</span>
+              <span className="text-xl text-slate-400 font-inter mb-1">/10</span>
             </div>
-            <Progress value={overallScore * 10} className="h-2 mt-2 bg-[rgba(255,255,255,0.05)]" />
+            <Progress value={overallScore * 10} className="h-2 mt-4 bg-slate-100" />
           </CardContent>
         </Card>
 
-        <Card className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-lg overflow-hidden">
+        <Card className="bg-white border-slate-200 shadow-sm rounded-xl">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-inter text-[#B6B6B6]">
-              Questions Answered
-            </CardTitle>
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-slate-500">Questions Answered</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold font-raleway text-[#ECF1F0]">{transcript?.length/2 || 0}</div>
+            <div className="text-4xl font-bold font-raleway text-slate-900">{transcript?.length / 2 || 0}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-lg overflow-hidden">
+        <Card className="bg-white border-slate-200 shadow-sm rounded-xl">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-inter text-[#B6B6B6]">Role</CardTitle>
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-slate-500">Target Role</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-raleway text-[#ECF1F0]">
+            <div className="text-2xl font-bold font-raleway text-slate-900 truncate">
               {session.role || "General Interview"}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-3 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)]">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10">
+        <TabsList className="w-full grid grid-cols-3 bg-slate-100 border border-slate-200 p-1 rounded-xl">
           <TabsTrigger
             value="summary"
-            className="data-[state=active]:bg-[rgba(15,174,150,0.1)] data-[state=active]:text-[#0FAE96] data-[state=active]:shadow-none text-[#B6B6B6] hover:text-[#ECF1F0] transition duration-200"
+            className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm text-slate-600 font-semibold"
           >
             Feedback Summary
           </TabsTrigger>
           <TabsTrigger
             value="transcript"
-            className="data-[state=active]:bg-[rgba(15,174,150,0.1)] data-[state=active]:text-[#0FAE96] data-[state=active]:shadow-none text-[#B6B6B6] hover:text-[#ECF1F0] transition duration-200"
+            className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm text-slate-600 font-semibold"
           >
             Transcript
           </TabsTrigger>
           <TabsTrigger
             value="recording"
-            className="data-[state=active]:bg-[rgba(15,174,150,0.1)] data-[state=active]:text-[#0FAE96] data-[state=active]:shadow-none text-[#B6B6B6] hover:text-[#ECF1F0] transition duration-200"
+            className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm text-slate-600 font-semibold"
           >
             Recording
           </TabsTrigger>
@@ -231,38 +168,42 @@ Recording:
 
         <TabsContent value="summary" className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-[rgba(15,174,150,0.05)] border border-[rgba(15,174,150,0.1)] rounded-lg overflow-hidden">
+            <Card className="bg-blue-50/50 border-blue-100 rounded-xl shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center text-[#0FAE96] font-raleway">
-                  <CheckCircle2 className="h-5 w-5 mr-2 text-[#0FAE96]" />
-                  Strengths
+                <CardTitle className="flex items-center text-blue-700 font-bold font-raleway">
+                  <CheckCircle2 className="h-5 w-5 mr-2 text-blue-600" />
+                  Key Strengths
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-3">
+                <ul className="space-y-4">
                   {strengths.map((strength, index) => (
-                    <li key={index} className="flex items-start">
-                      <CheckCircle2 className="h-5 w-5 mr-2 text-[#0FAE96] shrink-0 mt-0.5" />
-                      <span className="text-[#ECF1F0] font-inter">{strength}</span>
+                    <li key={index} className="flex items-start text-slate-700 font-medium">
+                      <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center mr-3 shrink-0 mt-0.5">
+                        <div className="h-2 w-2 rounded-full bg-blue-600" />
+                      </div>
+                      {strength}
                     </li>
                   ))}
                 </ul>
               </CardContent>
             </Card>
 
-            <Card className="bg-[rgba(255,0,199,0.05)] border border-[rgba(255,0,199,0.1)] rounded-lg overflow-hidden">
+            <Card className="bg-indigo-50/50 border-indigo-100 rounded-xl shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center text-[#FF00C7] font-raleway">
-                  <Star className="h-5 w-5 mr-2 text-[#FF00C7]" />
+                <CardTitle className="flex items-center text-indigo-700 font-bold font-raleway">
+                  <Star className="h-5 w-5 mr-2 text-indigo-600" />
                   Areas for Improvement
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-3">
+                <ul className="space-y-4">
                   {improvements.map((improvement, index) => (
-                    <li key={index} className="flex items-start">
-                      <Star className="h-5 w-5 mr-2 text-[#FF00C7] shrink-0 mt-0.5" />
-                      <span className="text-[#ECF1F0] font-inter">{improvement}</span>
+                    <li key={index} className="flex items-start text-slate-700 font-medium">
+                      <div className="h-5 w-5 rounded-full bg-indigo-100 flex items-center justify-center mr-3 shrink-0 mt-0.5">
+                        <div className="h-2 w-2 rounded-full bg-indigo-600" />
+                      </div>
+                      {improvement}
                     </li>
                   ))}
                 </ul>
@@ -272,82 +213,56 @@ Recording:
         </TabsContent>
 
         <TabsContent value="transcript" className="pt-6">
-          <Card className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-lg overflow-hidden">
+          <Card className="bg-white border-slate-200 rounded-xl shadow-sm">
             <CardContent className="p-6">
               {transcript && transcript.length > 0 ? (
-                <div className="space-y-6">
+                <div className="space-y-8">
                   {transcript.map((item, index) => (
-                    <div
-                      key={index}
-                      className="pb-6 border-b border-[rgba(255,255,255,0.05)] last:border-0"
-                    >
-                      <div className="mb-3">
-                        <h3 className="text-sm font-medium font-inter text-[#B6B6B6]">
-                          Question {index + 1}
-                        </h3>
-                        <p className="text-lg font-medium font-raleway text-[#ECF1F0] mt-1">
-                          {item.question}
-                        </p>
+                    <div key={index} className="pb-8 border-b border-slate-100 last:border-0">
+                      <div className="mb-4">
+                        <span className="text-xs font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-1 rounded">Question {index + 1}</span>
+                        <p className="text-lg font-bold text-slate-900 mt-2">{item.question}</p>
                       </div>
-                      <div>
-                        <h3 className="text-sm font-medium font-inter text-[#B6B6B6]">
-                          Your Answer to Question {index + 1}
-                        </h3>
-                        <p className="mt-1 text-[#B6B6B6] font-inter">
-                          {item.answer || "No response provided"}
+                      <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                        <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Your Response</span>
+                        <p className="mt-2 text-slate-700 leading-relaxed font-inter italic">
+                          "{item.answer || "No response provided"}"
                         </p>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-[#B6B6B6] font-inter">
-                  No transcript available
-                </p>
+                <p className="text-center text-slate-500 py-12">No transcript available</p>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="recording" className="pt-6">
-          <Card className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-lg overflow-hidden">
+          <Card className="bg-white border-slate-200 rounded-xl shadow-sm">
             <CardContent className="p-6">
               {recording ? (
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-sm font-medium font-inter text-[#B6B6B6]">
-                      Interview Video
-                    </h3>
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-bold text-slate-800">Interview Recording</h3>
                     <Button
                       variant="outline"
-                      className="flex items-center bg-[rgba(255,255,255,0.02)] border-[rgba(255,255,255,0.05)] text-[#ECF1F0] hover:bg-[rgba(255,255,255,0.05)] transition duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0FAE96]"
+                      className="border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white transition-all"
                       onClick={downloadVideo}
                     >
                       <Download className="h-4 w-4 mr-2" />
-                      Download Video
+                      Download MP4
                     </Button>
                   </div>
-                  <div className="relative aspect-video bg-[#11011E] rounded-lg overflow-hidden shadow-xl">
-                    <video
-                      src={recording}
-                      controls
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        console.error("Video playback error:", e);
-                        toast({
-                          title: "Video Playback Error",
-                          description: "Failed to play the recorded video. Try downloading it.",
-                          variant: "destructive",
-                        });
-                      }}
-                    />
-                    <div className="absolute inset-0 pointer-events-none border-2 border-[#0FAE96]/20 rounded-lg" />
+                  <div className="relative aspect-video bg-slate-900 rounded-xl overflow-hidden shadow-2xl border-4 border-white">
+                    <video src={recording} controls className="w-full h-full" />
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <Video className="h-12 w-12 text-[rgba(255,255,255,0.1)] mx-auto mb-4" />
-                  <p className="text-[#B6B6B6] font-inter">No recording available</p>
+                <div className="text-center py-20 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                  <Video className="h-12 w-12 text-slate-200 mx-auto mb-4" />
+                  <p className="text-slate-400 font-medium">No recording saved for this session</p>
                 </div>
               )}
             </CardContent>

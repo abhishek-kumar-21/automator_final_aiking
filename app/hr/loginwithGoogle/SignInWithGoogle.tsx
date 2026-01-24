@@ -43,7 +43,7 @@ function SignInwithGoogle() {
           const subSnapshot = await get(subRef);
           localStorage.setItem("SubscriptionType", subSnapshot.val());
 
-          //SAVE REFERRAL IN DB IF EXIST
+          // SAVE REFERRAL IN DB IF EXIST
           const getReferralCodeFromCookie = () => {
             const cookie = document.cookie.split('; ').find(row => row.startsWith('referral='));
             return cookie ? cookie.split('=')[1] : null;
@@ -134,17 +134,17 @@ function SignInwithGoogle() {
   }
 
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center w-full">
       <button
         type="button"
-        className="w-full max-w-md flex items-center justify-center bg-[#2A0A3A] text-white border border-[#3E3E3E] p-3 rounded-2xl hover:bg-[#0FAE96] hover:text-black transition-all duration-300 shadow-lg"
+        className="w-full flex items-center justify-center bg-white text-gray-700 border border-gray-300 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 shadow-sm font-medium"
         onClick={googleLogin}
       >
         <Image
           src={google}
           alt="Google icon"
-          width={24}
-          height={24}
+          width={20}
+          height={20}
           className="mr-3"
         />
         Sign in with Google

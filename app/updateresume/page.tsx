@@ -11,6 +11,7 @@ import {
 } from "firebase/storage";
 import { storage } from "@/firebase/config";
 import app from "@/firebase/config";
+import { FaCloudUploadAlt, FaTrashAlt, FaCheckCircle, FaExclamationCircle } from "react-icons/fa"; // Added Icons
 
 pdfjs.GlobalWorkerOptions.workerSrc = `/pdfjs/pdf.worker.min.js`;
 
@@ -197,136 +198,177 @@ const Resume: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#11011E] via-[#35013E] to-[#11011E] px-4">
-      <div className="flex flex-col md:flex-row items-center justify-center mx-auto gap-40">
+    // Changed bg to white/gray and increased vertical padding
+    <div className="min-h-screen flex items-center justify-center bg-white px-4 py-10 sm:py-18">
+      <div className="flex flex-col md:flex-row items-start justify-center mx-auto gap-12 w-full max-w-6xl">
 
         {/* Left Illustration */}
-        <div className="hidden md:block md:w-1/3">
+        <div className="hidden md:block md:w-5/12 sticky top-24">
           <img
             src="images/lastStepAvtar.png"
             alt="Illustration"
-            className="max-w-sm mx-auto"
+            className="w-full h-auto object-contain drop-shadow-xl"
           />
         </div>
+
+        {/* Loading Overlay */}
         {isLoading && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="spinner border-t-4 border-blue-500 border-solid rounded-full w-12 h-12 animate-spin"></div>
-            <p className="ml-4 text-white text-lg">
-              Processing your resume... Please wait.
-            </p>
+          <div className="fixed inset-0 flex items-center justify-center bg-white/80 z-50 backdrop-blur-sm">
+            <div className="flex flex-col items-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-[#1d4ed8]"></div>
+                <p className="mt-4 text-[#1d4ed8] font-medium text-lg">
+                Processing resume...
+                </p>
+            </div>
           </div>
         )}
-        <div className="w-full md:w-2/3 p-6 rounded-lg shadow-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)]">
-          <h2 className="text-2xl font-raleway mb-text-2xl font-raleway font-semibold mb-6 text-center animate-slideDown text-[#ECF1F0]">
-            Update Your Details
-          </h2>
-          {/* <p className="text-center text-gray-600 mb-4">
-            Start Auto-applying now!
-          </p> */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block font-medium text-[#B6B6B6] mb-1">
-                Current CTC in your local currency?
-              </label>
-              <input
-                type="text"
-                placeholder="Current CTC"
-                className="border border-[rgba(255,255,255,0.1)] w-full px-3 py-2 rounded-md bg-[#1A1A2E] text-[#ECF1F0] focus:outline-none focus:ring-2 focus:ring-[#0FAE96] placeholder-[#B6B6B6]"
-                required
-                onChange={(e) => setCurrentctc(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block font-medium text-[#B6B6B6] mb-1">
-                Expected CTC in your local currency?
-              </label>
-              <input
-                type="text"
-                placeholder="Expected CTC"
-                className="border border-[rgba(255,255,255,0.1)] w-full px-3 py-2 rounded-md bg-[#1A1A2E] text-[#ECF1F0] focus:outline-none focus:ring-2 focus:ring-[#0FAE96] placeholder-[#B6B6B6]"
-                required
-                onChange={(e) => setExpectedctc(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block font-medium text-[#B6B6B6] mb-1">
-                What is your notice period in days?
-              </label>
-              <input
-                type="text"
-                placeholder="Notice Period"
-                className="border border-[rgba(255,255,255,0.1)] w-full px-3 py-2 rounded-md bg-[#1A1A2E] text-[#ECF1F0] focus:outline-none focus:ring-2 focus:ring-[#0FAE96] placeholder-[#B6B6B6]"
-                required
-                onChange={(e) => setNoticePeriod(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block font-medium text-[#B6B6B6] mb-1">
-                Your preferred location in the job?
-              </label>
-              <input
-                type="text"
-                placeholder="Preferred Locations"
-                className="border border-[rgba(255,255,255,0.1)] w-full px-3 py-2 rounded-md bg-[#1A1A2E] text-[#ECF1F0] focus:outline-none focus:ring-2 focus:ring-[#0FAE96] placeholder-[#B6B6B6]"
-                required
-                onChange={(e) => setLocation(e.target.value)}
-              />
-            </div>
-            <br></br>
-            {/* Upload Resume */}
-            <label htmlFor="file-upload" className="cursor-pointer">
-              <span className="text-[#ECF1F0] text-xl font-raleway font-semibold tracking-wide relative inline-block after:content-[''] after:block after:w-16 after:h-1 after:mt-1 after:mx-auto">
-                Upload Your Resume
-              </span>
-              <div className="border border-dashed border-[#B6B6B6] rounded-md p-4 text-center text-[#B6B6B6] cursor-pointer hover:bg-[#1A1A2E]">
-                <input
-                  type="file"
-                  id="file-upload"
-                  accept="application/pdf"
-                  multiple
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-                <img
-                  src="images/file.png"
-                  alt="Upload Resume"
-                  className="w-10 h-10 mx-auto mb-2"
-                />
-                <p className="text-sm text-[#ECF1F0]">Upload Resume</p>
-              </div>
-            </label>
 
+        {/* Main Form Card - White Theme */}
+        <div className="w-full md:w-7/12 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Update Your Details
+            </h2>
+            <p className="text-gray-500">
+                Help us find the best opportunities for you.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* Current CTC */}
+                <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Current CTC
+                </label>
+                <input
+                    type="text"
+                    placeholder="e.g. 8 LPA"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white"
+                    required
+                    onChange={(e) => setCurrentctc(e.target.value)}
+                />
+                </div>
+
+                {/* Expected CTC */}
+                <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Expected CTC
+                </label>
+                <input
+                    type="text"
+                    placeholder="e.g. 12 LPA"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white"
+                    required
+                    onChange={(e) => setExpectedctc(e.target.value)}
+                />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* Notice Period */}
+                <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Notice Period (Days)
+                </label>
+                <input
+                    type="text"
+                    placeholder="e.g. 30"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white"
+                    required
+                    onChange={(e) => setNoticePeriod(e.target.value)}
+                />
+                </div>
+
+                {/* Location */}
+                <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Preferred Location
+                </label>
+                <input
+                    type="text"
+                    placeholder="e.g. Bangalore, Remote"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white"
+                    required
+                    onChange={(e) => setLocation(e.target.value)}
+                />
+                </div>
+            </div>
+
+            <hr className="border-gray-100 my-6" />
+
+            {/* Upload Resume Section */}
+            <div>
+                <label htmlFor="file-upload" className="block w-full cursor-pointer group">
+                    <span className="block text-sm font-semibold text-gray-700 mb-2">
+                        Upload Your Resume
+                    </span>
+                    
+                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center transition-all duration-300 group-hover:border-[#1d4ed8] group-hover:bg-blue-50">
+                        <input
+                            type="file"
+                            id="file-upload"
+                            accept="application/pdf"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                        />
+                        <div className="flex flex-col items-center justify-center">
+                            <div className="p-4 bg-blue-100 text-[#1d4ed8] rounded-full mb-3 group-hover:scale-110 transition-transform">
+                                <FaCloudUploadAlt size={32} />
+                            </div>
+                            <p className="text-gray-900 font-medium group-hover:text-[#1d4ed8]">
+                                Click to upload or drag and drop
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">PDF format only (Max 5MB)</p>
+                        </div>
+                    </div>
+                </label>
+            </div>
+
+            {/* Selected File State */}
             {pdfName ? (
-              <div className="flex items-center justify-between bg-[#1A1A2E] text-[#84CC16] px-4 py-2 rounded-md mt-2">
-                <span>{pdfName}</span>
+              <div className="flex items-center justify-between bg-green-50 border border-green-200 px-4 py-3 rounded-lg animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-3">
+                    <FaCheckCircle className="text-green-600" />
+                    <span className="text-green-800 font-medium text-sm truncate max-w-[200px] sm:max-w-xs">{pdfName}</span>
+                </div>
                 <button
                   type="button"
                   onClick={handleRemovePdf}
-                  className="text-red-500 hover:text-red-700 font-semibold transition duration-200"
+                  className="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded-full transition-colors"
+                  title="Remove file"
                 >
-                  Remove
+                  <FaTrashAlt />
                 </button>
               </div>
             ) : (
-              <p className="text-center text-red-700">No file selected</p>
+                // Optional: Error state if needed, currently just empty or hidden
+                null
             )}
+
             <button
               ref={submitButtonRef}
               type="submit"
-              className="w-full py-2 bg-[#0FAE96] text-[#FFFFFF] rounded-md font-raleway font-medium text-base hover:opacity-90"
+              className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:-translate-y-1 ${
+                  isLoading 
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+                  : "bg-[#1d4ed8] text-white hover:bg-[#1e40af] hover:shadow-blue-500/30"
+              }`}
               disabled={isLoading}
             >
-              Submit
+              {isLoading ? "Processing..." : "Submit Application"}
             </button>
-            {/* need to be removed */}
-            <p>Selected File: {Resume}</p>
+
+            {/* Hidden PDF Preview for Logic */}
             {pdf && (
-              <iframe
-                src={URL.createObjectURL(pdf)}
-                width="100%"
-                height="500px"
-                title="PDF Viewer"
-              />
+              <div className="hidden">
+                  <iframe
+                    src={URL.createObjectURL(pdf)}
+                    width="100%"
+                    height="500px"
+                    title="PDF Viewer"
+                  />
+              </div>
             )}
           </form>
         </div>
@@ -336,4 +378,3 @@ const Resume: React.FC = () => {
 };
 
 export default Resume;
-

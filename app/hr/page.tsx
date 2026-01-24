@@ -8,23 +8,30 @@ import HRHowItWorksSection from "@/components/hr/HRHowItWorks";
 import HRResumeATSChecker from "@/components/hr/HRResumeATSChecker";
 import HRTestimonialSection from "@/components/hr/HRTestimonialSection";
 import HRVideoSection from "@/components/hr/HRVideoSection";
-import JobSeeker from "@/components/hr/jobseeker";
+import HRSequenceSection from "@/components/hr/HRSequenceSection";
+import JobSeeker from "@/components/Jobseeker";
 import PricingSection from "@/components/hr/pricing";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import HowItWorks from "@/components/home/HowItWorks";
+import TestimonialSection from "@/components/home/TestimonialSection";
+import ResumeATSChecker from "@/components/home/ResumeATSChecker";
+import FAQSection from "@/components/home/FAQSection";
 
 export default function HRPage() {
   return (
-    <div className="min-h-screen bg-[#11011E]">
+    <div className="min-h-screen bg-white">
       <HRNavbar />
       <HRHeroSection />
-      <HRVideoSection />
+      {/* <HRVideoSection /> */}
       <HRCompaniesSection />
-      <HRHowItWorksSection />
+      <HRSequenceSection />
+      {/* <HRHowItWorksSection /> */}
       <HRFeaturesSection />
+      <HowItWorks/>
       <PricingSection />
-      <HRTestimonialSection />
-      <HRResumeATSChecker />
-      <HRFAQSection />
+      <TestimonialSection />
+      <ResumeATSChecker />
+      <FAQSection />
       <JobSeeker />
       <WhatsAppButton />
     </div>

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Timer, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import { toPng } from "html-to-image";
 import Certificate from "@/components/Certificate";
@@ -27,7 +27,7 @@ type PageState = "instructions" | "quiz" | "result";
 
 const TOTAL_QUESTIONS = 30;
 const TOTAL_TIME_SECONDS = 30 * 60; // 30 minutes
-const PASS_MARKS = 0;
+const PASS_MARKS = 21; // Set to 21 based on UI instructions logic
 
 function normalizeCorrectAnswer(
     correctAnswer: string,
@@ -39,12 +39,10 @@ function normalizeCorrectAnswer(
 
     const trimmed = correctAnswer.trim();
 
-    // Case 1: already exact option text
     if (options.includes(trimmed)) {
         return trimmed;
     }
 
-    // Case 2: A / B / C / D
     const letterMap: Record<string, number> = {
         A: 0,
         B: 1,
@@ -57,7 +55,6 @@ function normalizeCorrectAnswer(
         return options[letterMap[upper]];
     }
 
-    // Case 3: "Option B", "Answer: C"
     const match = upper.match(/\b[A-D]\b/);
     if (match && letterMap[match[0]] !== undefined) {
         return options[letterMap[match[0]]];
@@ -74,7 +71,6 @@ function validateAndFixQuestions(rawQuestions: any[]): Question[] {
                 !Array.isArray(q?.options) ||
                 q.options.length !== 4
             ) {
-                console.warn("Invalid question structure:", q);
                 return null;
             }
 
@@ -84,7 +80,6 @@ function validateAndFixQuestions(rawQuestions: any[]): Question[] {
             );
 
             if (!fixedCorrectAnswer) {
-                console.warn("Invalid correctAnswer:", q);
                 return null;
             }
 
@@ -92,7 +87,7 @@ function validateAndFixQuestions(rawQuestions: any[]): Question[] {
                 id: index + 1,
                 question: q.question,
                 options: q.options,
-                correctAnswer: fixedCorrectAnswer, // ✅ ALWAYS option text
+                correctAnswer: fixedCorrectAnswer,
             };
         })
         .filter(Boolean) as Question[];
@@ -149,7 +144,7 @@ export default function SkillQuizPage() {
             try {
                 const parsedResume = JSON.parse(storedResume);
                 fillResumeData(parsedResume);
-                return; // stop here if resume exists
+                return;
             } catch (err) {
                 console.error("Invalid resumeData in localStorage", err);
             }
@@ -323,144 +318,121 @@ export default function SkillQuizPage() {
     /* ================= UI ================= */
 
     return (
-        <div className="min-h-[80vh] bg-[#11011E] p-6 flex items-center justify-center">
+        <div className="min-h-[80vh] bg-slate-50 p-6 flex items-center justify-center text-black">
             {isLoading && (
                 <Card
-                    className="relative w-full max-w-md mx-auto p-5 sm:p-6 lg:p-7 bg-[rgba(255,255,255,0.02)] rounded-2xl border border-white/10 backdrop-blur-xl shadow-[0_0_40px_rgba(15,174,150,0.08)] overflow-hidden"
+                    className="relative w-full max-w-md mx-auto p-5 sm:p-6 lg:p-7 bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden"
                 >
-                    {/* subtle glow */}
-                    <div className="absolute -top-20 -right-20 w-56 h-56 bg-[#0FAE96]/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -top-20 -right-20 w-56 h-56 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
                     <CardContent
                         className="relative z-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 text-center sm:text-left"
                     >
                         <Loader2
-                            className="animate-spin text-[#0FAE96] w-6 h-6 lg:w-7 lg:h-7"
+                            className="animate-spin text-blue-600 w-6 h-6 lg:w-7 lg:h-7"
                         />
-
-                        <span
-                            className="text-[#B6B6B6] font-medium tracking-wide"
-                        >
+                        <span className="text-slate-600 font-medium tracking-wide">
                             Generating quiz…
                         </span>
                     </CardContent>
                 </Card>
-
             )}
 
             {/* ================= INSTRUCTIONS ================= */}
             {pageState === "instructions" && !isLoading && (
                 <Card
-                    className="relative w-full max-w-xl bg-[rgba(255,255,255,0.02)] rounded-2xl p-5 sm:p-6 lg:p-7 border border-white/10 backdrop-blur-xl shadow-[0_0_45px_rgba(15,174,150,0.08)] overflow-hidden"
+                    className="relative w-full max-w-xl bg-white rounded-2xl p-5 sm:p-6 lg:p-7 border border-slate-200 shadow-2xl overflow-hidden"
                 >
-                    {/* glow */}
-                    <div className="absolute -top-24 -right-24 w-72 h-72 bg-[#0FAE96]/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -top-24 -right-24 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
-                    {/* HEADER */}
-                    <CardHeader className="pb-4 lg:pb-5 border-b border-white/10 relative z-10">
-                        <CardTitle
-                            className="text-[#ECF1F0] font-semibold tracking-wide text-lg sm:text-xl lg:text-2xl"
-                        >
-                            {skill} Assessment Test
+                    <CardHeader className="pb-4 lg:pb-5 border-b border-slate-100 relative z-10">
+                        <CardTitle className="text-black font-bold tracking-tight text-xl sm:text-2xl lg:text-3xl">
+                            {skill} Assessment
                         </CardTitle>
-
-                        <p className="mt-2 text-[#B6B6B6]">
-                            Evaluate your knowledge and unlock certification eligibility
+                        <p className="mt-2 text-slate-500">
+                            Evaluate your proficiency and earn your certificate.
                         </p>
                     </CardHeader>
 
-                    {/* CONTENT */}
-                    <CardContent className="mt-5 lg:mt-6 space-y-6 text-[#B6B6B6] relative z-10">
-                        {/* LIST */}
-                        <div className="space-y-3">
+                    <CardContent className="mt-5 lg:mt-6 space-y-6 relative z-10">
+                        <div className="grid gap-3">
                             {[
                                 { label: "Total Questions", value: "30" },
                                 { label: "Total Time", value: "30 Minutes" },
                                 { label: "Total Marks", value: "30" },
                                 { label: "Passing Marks", value: "21" },
-                                { label: "Submission", value: "Auto-submit on time up" },
+                                { label: "Submission", value: "Auto-submit" },
                             ].map((item, idx) => (
                                 <div
                                     key={idx}
-                                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 transition-all duration-300 hover:bg-white/[0.06] hover:border-[#0FAE96]/40"
+                                    className="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors hover:border-blue-400"
                                 >
-                                    <span>
-                                        {item.label}
-                                    </span>
-
-                                    <span className="font-medium text-[#ECF1F0] ">
-                                        {item.value}
-                                    </span>
+                                    <span className="text-slate-600 text-sm font-medium">{item.label}</span>
+                                    <span className="font-bold text-black">{item.value}</span>
                                 </div>
                             ))}
                         </div>
 
-                        {/* CTA */}
                         <Button
                             onClick={startQuiz}
-                            className="w-full bg-[#0FAE96] text-black rounded-xl py-3 sm:py-3.5 font-semibold tracking-wide shadow-[0_12px_35px_rgba(15,174,150,0.35)] transition-all duration-300 hover:shadow-[0_18px_45px_rgba(15,174,150,0.55)] hover:scale-[1.03] active:scale-[0.97]"
+                            className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-xl py-3 text-lg font-bold shadow-lg shadow-blue-200 transition-all hover:scale-[1.01] active:scale-[0.99]"
                         >
-                            Start Quiz
+                            Start Assessment
                         </Button>
 
-                        <p className="text-center text-sm lg:text-base text-[#B6B6B6]/80">
-                            Once started, the test cannot be paused
+                        <p className="text-center text-sm text-slate-400">
+                            The timer starts immediately and cannot be paused.
                         </p>
                     </CardContent>
                 </Card>
-
             )}
 
             {/* ================= QUIZ ================= */}
             {pageState === "quiz" && (
-                <div className="w-full max-w-3xl mx-auto space-y-6 lg:space-y-8">
-                    {/* HEADER / TIMER */}
-                    <div
-                        className="sticky top-16 z-20 flex flex-col sm:flex-row items-center justify-between gap-3 p-4 sm:p-5 rounded-xl bg-[rgba(255,255,255,0.02)] border border-white/10 backdrop-blur-xl shadow-[0_0_30px_rgba(15,174,150,0.08)]"
-                    >
-                        <span className="text-[#ECF1F0] font-semibold">
-                            ⏱ Time Left: {formatTime(timeLeft)}
-                        </span>
+                <div className="w-full max-w-3xl mx-auto space-y-6">
+                    <div className="sticky top-20 z-20 flex items-center justify-between p-4 rounded-xl bg-white/80 border border-slate-200 backdrop-blur-md shadow-lg">
+                        <div className="flex items-center gap-2 text-blue-600 font-bold">
+                            <Timer className="w-5 h-5" />
+                            <span>{formatTime(timeLeft)}</span>
+                        </div>
 
                         <Button
                             onClick={() => handleSubmit(false)}
-                            className="bg-[#0FAE96] px-5 py-2.5 rounded-lg font-medium shadow-[0_10px_30px_rgba(15,174,150,0.35)] transition-all duration-300 hover:shadow-[0_15px_40px_rgba(15,174,150,0.55)] hover:scale-[1.02] active:scale-[0.98]"
+                            className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-2 rounded-lg font-bold shadow-md"
                         >
-                            Submit Quiz
+                            Finish Quiz
                         </Button>
                     </div>
 
-                    {/* QUESTIONS */}
                     {questions.map(q => (
                         <Card
                             key={q.id}
-                            className="bg-[rgba(255,255,255,0.02)] border border-white/10 rounded-2xl shadow-[0_0_25px_rgba(15,174,150,0.05)]"
+                            className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden"
                         >
-                            <CardContent className="p-5 sm:p-6 space-y-4">
-                                {/* QUESTION */}
-                                <p className="text-[#ECF1F0] font-semibold leading-relaxed">
-                                    {q.id}. {q.question}
+                            <CardContent className="p-6 space-y-5">
+                                <p className="text-black font-bold text-lg leading-tight">
+                                    <span className="text-blue-600 mr-2">{q.id}.</span> 
+                                    {q.question}
                                 </p>
 
-                                {/* OPTIONS */}
-                                <div className="space-y-3">
+                                <div className="grid gap-3">
                                     {q.options.map((opt, idx) => (
                                         <label
                                             key={`${q.id}-${idx}`}
-                                            className="flex items-start gap-3 p-3 sm:p-4 rounded-xl cursor-pointer bg-white/[0.02] border border-white/10 transition-all duration-300 hover:bg-white/[0.05] hover:border-[#0FAE96]/40"
-                                        >
+                                            className={`flex items-start gap-3 p-4 rounded-xl cursor-pointer border transition-all 
+                                                ${answers[q.id] === opt 
+                                                    ? "bg-blue-50 border-blue-600 ring-1 ring-blue-600" 
+                                                    : "bg-slate-50 border-slate-200 hover:border-blue-300 hover:bg-white"}`}
+                                         label-text-black>
                                             <input
                                                 type="radio"
                                                 name={`q-${q.id}`}
-                                                className="mt-1 accent-[#0FAE96] w-4 h-4"
+                                                className="mt-1 accent-blue-600 w-4 h-4"
                                                 onChange={() =>
                                                     setAnswers(prev => ({ ...prev, [q.id]: opt }))
                                                 }
                                             />
-
-                                            <span className="text-[#B6B6B6] leading-relaxed">
-                                                {opt}
-                                            </span>
+                                            <span className="text-slate-800 font-medium">{opt}</span>
                                         </label>
                                     ))}
                                 </div>
@@ -472,134 +444,108 @@ export default function SkillQuizPage() {
 
             {/* ================= RESULT ================= */}
             {pageState === "result" && (
-                <div className="w-full max-w-3xl mx-auto space-y-6 lg:space-y-8">
-                    {/* ===== SUMMARY CARD ===== */}
-                    <Card
-                        className="bg-[rgba(255,255,255,0.02)] border border-white/10 rounded-2xl shadow-[0_0_35px_rgba(15,174,150,0.08)]"
-                    >
-                        <CardContent className="p-5 sm:p-6 lg:p-7 space-y-4 text-[#ECF1F0]">
-                            {/* SCORE */}
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                <p className="font-bold text-lg lg:text-2xl">
-                                    Score: {score} / 30
-                                </p>
-
-                                <p className="text-[#B6B6B6]">
-                                    ⏱ Time Taken: {formatTime(timeTaken)}
-                                </p>
+                <div className="w-full max-w-3xl mx-auto space-y-6">
+                    <Card className="bg-white border border-slate-200 rounded-2xl shadow-xl">
+                        <CardContent className="p-8 space-y-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-6 gap-4">
+                                <div>
+                                    <h2 className="text-3xl font-black text-black">Results</h2>
+                                    <p className="text-slate-500">Completed in {formatTime(timeTaken)}</p>
+                                </div>
+                                <div className="bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100">
+                                    <p className="text-sm text-slate-500 uppercase font-bold tracking-wider">Final Score</p>
+                                    <p className="text-4xl font-black text-blue-600">{score} <span className="text-xl text-slate-300">/ 30</span></p>
+                                </div>
                             </div>
 
-                            {/* STATUS */}
                             {score < PASS_MARKS ? (
-                                <div className="p-4 rounded-xl bg-red-400/10 border border-red-400/30">
-                                    <p className="text-red-400 font-medium">
-                                        Your score is less than 21. Certificate cannot be generated.
+                                <div className="flex items-center gap-4 p-5 rounded-2xl bg-red-50 border border-red-100">
+                                    <XCircle className="text-red-600 w-8 h-8 shrink-0" />
+                                    <p className="text-red-800 font-bold">
+                                        You scored below 21. Keep practicing and try again to earn your certificate!
                                     </p>
                                 </div>
                             ) : (
-                                <div className="p-4 rounded-xl bg-green-400/10 border border-green-400/30">
-                                    <p className="text-green-400 font-medium">
-                                        You are eligible for certificate generation.
+                                <div className="flex items-center gap-4 p-5 rounded-2xl bg-green-50 border border-green-100">
+                                    <CheckCircle2 className="text-green-600 w-8 h-8 shrink-0" />
+                                    <p className="text-green-800 font-bold">
+                                        Congratulations! You've passed the assessment and are eligible for your certificate.
                                     </p>
                                 </div>
                             )}
 
-                            {/* ACTIONS */}
-                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
+                            <div className="flex flex-wrap gap-4">
                                 <Button
                                     onClick={retakeQuiz}
-                                    className="w-full sm:w-auto bg-[#0FAE96] px-5 py-2.5 rounded-lg"
+                                    variant="outline"
+                                    className="flex-1 border-slate-200 text-black hover:bg-slate-50 py-6 font-bold"
                                 >
-                                    Retake Quiz
+                                    Retake Assessment
                                 </Button>
 
                                 {score >= PASS_MARKS && (
                                     <>
                                         <Button
                                             onClick={downloadCertificate}
-                                            className="bg-amber-500 w-full sm:w-auto px-5 py-2.5 rounded-lg"
+                                            className="flex-1 bg-amber-500 text-black hover:bg-amber-600 py-6 font-bold"
                                         >
                                             Download Certificate
                                         </Button>
-
-                                        {/* Hidden Certificate */}
-                                        <div
-                                            style={{
-                                                position: "fixed",
-                                                left: "-2000px",
-                                                top: "0",
-                                                visibility: "visible",
-                                            }}
-                                        >
+                                        <div style={{ position: "fixed", left: "-2000px", top: "0" }}>
                                             <Certificate
                                                 ref={certRef}
                                                 userName={personalData.name || username}
                                                 skill={skill}
                                                 date={new Date().toLocaleDateString("en-IN", {
-                                                    day: "2-digit",
-                                                    month: "long",
-                                                    year: "numeric",
+                                                    day: "2-digit", month: "long", year: "numeric",
                                                 })}
                                             />
                                         </div>
-
                                     </>
                                 )}
-
                             </div>
                         </CardContent>
                     </Card>
 
-                    {/* ===== ANSWER REVIEW ===== */}
-                    {questions.map(q => {
-                        const userAnswer = answers[q.id];
+                    {/* Answer Review */}
+                    <div className="space-y-4">
+                        <h3 className="text-xl font-bold text-black px-2">Detailed Review</h3>
+                        {questions.map(q => {
+                            const userAnswer = answers[q.id];
+                            return (
+                                <Card key={q.id} className="bg-white border border-slate-200 rounded-2xl">
+                                    <CardContent className="p-6 space-y-4">
+                                        <p className="text-black font-bold">
+                                            {q.id}. {q.question}
+                                        </p>
+                                        <div className="grid gap-2">
+                                            {q.options.map((opt, idx) => {
+                                                const isCorrect = opt === q.correctAnswer;
+                                                const isUserSelection = opt === userAnswer;
+                                                const isWrongChoice = isUserSelection && !isCorrect;
 
-                        return (
-                            <Card
-                                key={q.id}
-                                className="bg-[rgba(255,255,255,0.02)] border border-white/10 rounded-2xl"
-                            >
-                                <CardContent className="p-5 sm:p-6 space-y-4">
-                                    {/* QUESTION */}
-                                    <p className="text-[#ECF1F0] font-semibold leading-relaxed">
-                                        {q.id}. {q.question}
-                                    </p>
-
-                                    {/* OPTIONS */}
-                                    <div className="space-y-2">
-                                        {q.options.map((opt, idx) => {
-                                            const isCorrect = opt === q.correctAnswer;
-                                            const isWrong = opt === userAnswer && opt !== q.correctAnswer;
-
-                                            return (
-                                                <div
-                                                    key={`${q.id}-review-${idx}`}
-                                                    className={`flex items-start justify-between gap-3 p-3 sm:p-4 rounded-xl border 
-                                                        ${isCorrect ? "border-green-400/40 bg-green-400/10"
-                                                            : isWrong ? "border-red-400/40 bg-red-400/10" : "border-white/10 bg-white/[0.02]"
-                                                        }`}
-                                                >
-                                                    <p
-                                                        className={`                                                            ${isCorrect
-                                                            ? "text-green-400"
-                                                            : isWrong ? "text-red-400" : "text-[#B6B6B6]"
+                                                return (
+                                                    <div
+                                                        key={`${q.id}-review-${idx}`}
+                                                        className={`flex items-center justify-between p-4 rounded-xl border text-sm font-medium
+                                                            ${isCorrect ? "bg-green-50 border-green-200 text-green-700"
+                                                                : isWrongChoice ? "bg-red-50 border-red-200 text-red-700" 
+                                                                : "bg-slate-50 border-slate-100 text-slate-500"
                                                             }`}
                                                     >
-                                                        {opt}
-                                                    </p>
-
-                                                    {isCorrect && <span className="text-green-400">✔</span>}
-                                                    {isWrong && <span className="text-red-400">✖</span>}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
+                                                        <span>{opt}</span>
+                                                        {isCorrect && <CheckCircle2 className="w-4 h-4" />}
+                                                        {isWrongChoice && <XCircle className="w-4 h-4" />}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
                 </div>
-
             )}
         </div>
     );

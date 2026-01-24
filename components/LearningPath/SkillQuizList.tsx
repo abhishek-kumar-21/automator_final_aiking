@@ -10,9 +10,9 @@ export default function SkillQuizList() {
     if (!missingSkills?.length) return null;
 
     return (
-        <Card className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-5">
+        <Card className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
             <CardHeader>
-                <CardTitle className="text-[#ECF1F0] font-raleway">
+                <CardTitle className="text-black font-raleway">
                     Skill-wise Quiz
                 </CardTitle>
             </CardHeader>
@@ -21,16 +21,16 @@ export default function SkillQuizList() {
                 {missingSkills.map(skill => (
                     <div
                         key={skill}
-                        className="flex items-center justify-between border border-[rgba(255,255,255,0.05)] rounded-md p-3"
+                        className="flex items-center justify-between border border-slate-100 rounded-md p-3 bg-slate-50/50"
                     >
-                        <span className="text-[#B6B6B6] font-inter">{skill}</span>
+                        <span className="text-slate-700 font-medium font-inter">{skill}</span>
                         <a
                             href={`/quiz/${encodeURIComponent(skill)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                         >
                             <Button
-                                className="bg-[#0FAE96] rounded-md p-2 scale-95 hover:scale-105 transition-all duration-300"
+                                className="bg-blue-600 hover:bg-blue-700 text-white rounded-md p-2 scale-95 hover:scale-105 transition-all duration-300"
                             >
                                 Take Quiz
                             </Button>

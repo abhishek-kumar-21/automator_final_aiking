@@ -11,8 +11,7 @@ import {
 import { getDatabase, ref, remove, set } from "firebase/database";
 import app, { auth } from "@/firebase/config";
 import { toast } from "react-toastify";
-// import { User } from "lucide-react";
-
+import { AlertTriangle, X } from "lucide-react"; // Added icons for better UI
 
 interface DeleteAccountModalProps {
   onClose: () => void;
@@ -24,7 +23,8 @@ export default function DeleteAccountModal({ onClose }: DeleteAccountModalProps)
   const [showReauth, setShowReauth] = useState<boolean>(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const db = getDatabase(app)
+  const db = getDatabase(app);
+
   // Prevent background scrolling when modal is open
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -32,12 +32,13 @@ export default function DeleteAccountModal({ onClose }: DeleteAccountModalProps)
       document.body.style.overflow = "auto";
     };
   }, []);
-  useEffect(()=>{
-    if(auth.currentUser){
-      let email = auth.currentUser.email;
-      setEmail(email)
+
+  useEffect(() => {
+    if (auth.currentUser) {
+      let email = auth.currentUser.email || "";
+      setEmail(email);
     }
-  },[])
+  }, []);
 
   const deleteUserData = async (uid: string): Promise<void> => {
     try {
@@ -50,7 +51,7 @@ export default function DeleteAccountModal({ onClose }: DeleteAccountModalProps)
     }
   };
 
-  //SAVE DELETED MESSAGE IN FIREABSE
+  // SAVE DELETED MESSAGE IN FIREBASE
   const handleSaveMessage = async (uid: string, email: string, reason: string): Promise<void> => {
     try {
       const messageRef = ref(db, `DeletedUser/Message/${uid}`);
@@ -135,7 +136,7 @@ export default function DeleteAccountModal({ onClose }: DeleteAccountModalProps)
       }
 
       try {
-        await handleSaveMessage(user.uid,email,reason);
+        await handleSaveMessage(user.uid, email, reason);
         await deleteUserData(user.uid);
         await deleteUser(user);
         toast.success("Account deleted successfully!");
@@ -156,98 +157,142 @@ export default function DeleteAccountModal({ onClose }: DeleteAccountModalProps)
     }
   };
 
-  // Placeholder for notifyExtensionOnLogout (replace with actual implementation)
+  // Placeholder for notifyExtensionOnLogout
   const notifyExtensionOnLogout = (): boolean => {
-    // Implement your extension notification logic here
-    return true; // Return true for success, false for failure
+    return true; 
   };
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50 backdrop-blur-sm"
+      className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <div
-        className="bg-[#1A1A2E] border border-gray-600 text-white p-6 rounded-xl shadow-2xl max-w-md w-full relative animate-scaleIn"
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative overflow-hidden animate-scaleIn border border-gray-200"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          className="absolute top-3 right-4 text-gray-400 hover:text-red-500 text-2xl"
-          onClick={onClose}
-        >
-          ×
-        </button>
-        <h2 className="text-2xl font-bold text-center mb-3">Confirm Account Deletion</h2>
-        <p className="text-center text-sm text-gray-400 mb-6">
-          Deleting your account will permanently remove all data. This action cannot be undone.
-        </p>
+        {/* Header - Warning Style */}
+        <div className="bg-red-50 px-6 py-4 border-b border-red-100 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-red-100 rounded-full">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+            </div>
+            <h2 className="text-lg font-bold text-red-700">Delete Account</h2>
+          </div>
+          <button
+            className="text-gray-400 hover:text-gray-600 transition-colors rounded-full p-1 hover:bg-white/50"
+            onClick={onClose}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-        {!showReauth ? (
-          <>
-            <div className="mb-4">
-              <label className="text-sm block text-gray-300 mb-2 text-center">
-                Type <span className="font-bold text-red-500">"DELETE"</span> to confirm:
-              </label>
-              <input
-                type="text"
-                value={confirmation}
-                onChange={(e) => setConfirmation(e.target.value)}
-                placeholder="Type DELETE"
-                className="w-full p-2 rounded-lg bg-[#2E2E4E] text-white border border-gray-500 focus:ring-2 focus:ring-red-500 text-center"
-              />
-            </div>
-            <div className="mb-4">
-              <textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Enter your reason (optional)"
-                className="w-full p-2 rounded-lg bg-[#2E2E4E] text-white border border-gray-500 focus:ring-2 focus:ring-gray-400"
-              />
-            </div>
-            <button
-              onClick={handleDelete}
-              className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition shadow-lg"
-            >
-              Delete Account
-            </button>
-          </>
-        ) : (
-          <>
-            <h3 className="text-lg font-semibold text-center mb-3">
-              Please sign in again to confirm deletion
-            </h3>
-            {auth.currentUser?.providerData[0]?.providerId === "password" ? (
-              <div className="mb-4">
+        <div className="p-6">
+          <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+            Are you sure you want to delete your account? This action is <span className="font-bold text-red-600">permanent</span> and cannot be undone. All your data will be erased immediately.
+          </p>
+
+          {!showReauth ? (
+            <>
+              <div className="mb-5">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  To confirm, type <span className="font-bold text-red-600">DELETE</span> below:
+                </label>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full p-2 rounded-lg bg-[#2E2E4E] text-white border border-gray-500 focus:ring-2 focus:ring-red-500 mb-2"
-                />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full p-2 rounded-lg bg-[#2E2E4E] text-white border border-gray-500 focus:ring-2 focus:ring-red-500"
+                  type="text"
+                  value={confirmation}
+                  onChange={(e) => setConfirmation(e.target.value)}
+                  placeholder="DELETE"
+                  className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-400 bg-gray-50 text-center font-bold tracking-wider"
                 />
               </div>
-            ) : (
-              <p className="text-center text-sm text-gray-400 mb-4">
-                Please re-authenticate with your {auth.currentUser?.providerData[0]?.providerId} account.
-              </p>
-            )}
-            <button
-              onClick={() => handleReauthenticate(auth.currentUser!)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition shadow-lg"
-            >
-              {auth.currentUser?.providerData[0]?.providerId === "password"
-                ? "Re-authenticate"
-                : "Sign in with Google"}
-            </button>
-          </>
-        )}
+              
+              <div className="mb-6">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Reason for leaving (optional):
+                </label>
+                <textarea
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="We're sorry to see you go..."
+                  className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 text-gray-900 placeholder-gray-400 bg-white min-h-[80px] resize-none text-sm"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={onClose}
+                  className="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={confirmation.toUpperCase() !== "DELETE"}
+                  className={`flex-1 px-4 py-2.5 text-white font-medium rounded-lg transition-all shadow-sm ${
+                    confirmation.toUpperCase() === "DELETE"
+                      ? "bg-red-600 hover:bg-red-700 hover:shadow-md"
+                      : "bg-red-300 cursor-not-allowed"
+                  }`}
+                >
+                  Delete Account
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg text-sm text-blue-700 mb-4">
+                For security reasons, please confirm your identity to complete deletion.
+              </div>
+              
+              {auth.currentUser?.providerData[0]?.providerId === "password" ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Password</label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <p className="text-center text-sm text-gray-600 my-4">
+                  Please sign in again with your {auth.currentUser?.providerData[0]?.providerId} account.
+                </p>
+              )}
+              
+              <div className="flex gap-3 mt-6">
+                 <button
+                  onClick={() => setShowReauth(false)}
+                  className="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => handleReauthenticate(auth.currentUser!)}
+                  className="flex-1 w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-medium transition shadow-sm"
+                >
+                  {auth.currentUser?.providerData[0]?.providerId === "password"
+                    ? "Verify & Delete"
+                    : "Sign in with Google"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

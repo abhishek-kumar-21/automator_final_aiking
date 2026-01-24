@@ -1,8 +1,8 @@
+/** @format */
 "use client";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import Image from "next/image";
-import contactusSvg from "./contact.svg";
+import { FaHome, FaPhoneAlt, FaEnvelope } from "react-icons/fa"; // Importing icons
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
@@ -23,7 +23,7 @@ const ContactUs = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSubmitting) return; // Prevent multiple submissions
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
     try {
@@ -50,89 +50,127 @@ const ContactUs = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#11011E] via-[#35013E] to-[#11011E] px-4">
-      <div className="flex flex-col md:flex-row items-center justify-center mx-auto gap-40">
-        {/* Left Illustration */}
-        <div className="hidden md:block md:w-1/3">
-          <Image
-            src={contactusSvg}
-            alt="Illustration"
-            className="max-w-sm mx-auto"
-          />
+    <div className="min-h-screen flex items-center justify-center bg-white px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start">
+        
+        {/* Left Column: Contact Information */}
+        <div className="space-y-10">
+          <div>
+            <span className="text-blue-600 font-semibold text-sm uppercase tracking-wider mb-2 block">
+              Contact Us
+            </span>
+            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight">
+              Get In Touch With Us
+            </h1>
+          </div>
+
+          <div className="space-y-8">
+            {/* Location */}
+            <div className="flex items-start gap-5">
+              <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 text-blue-600">
+                <FaHome size={22} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">Our Location</h3>
+                <p className="text-gray-600 leading-relaxed max-w-sm">
+                  Flat No. 116, AP, Tel Junner, Sairpark Building, Dist, Ale, Alephata, Maharashtra 412411
+                </p>
+              </div>
+            </div>
+
+            {/* Phone */}
+            <div className="flex items-start gap-5">
+              <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 text-blue-600">
+                <FaPhoneAlt size={20} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">Phone Number</h3>
+                <p className="text-gray-600 font-medium">+91 9766116839</p>
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="flex items-start gap-5">
+              <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 text-blue-600">
+                <FaEnvelope size={20} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">Email Address</h3>
+                <p className="text-gray-600">contact@jobformautomator.com</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="w-full md:w-2/3 p-6 rounded-lg shadow-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)]">
-          <h2 className="text-2xl font-semibold font-raleway text-[#ECF1F0] mb-6 text-center animate-slideDown">
-            Contact Us
-          </h2>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Right Column: Contact Form */}
+        <div className="bg-white p-8 sm:p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            
+            {/* Name Input */}
             <div>
-              <label className="block font-medium text-[#B6B6B6] mb-1">
-                Name
-              </label>
               <input
                 type="text"
                 name="name"
-                placeholder="Name"
-                className="border border-[rgba(255,255,255,0.1)] w-full px-3 py-2 rounded-md bg-[#1A1A2E] text-[#ECF1F0] focus:outline-none focus:ring-2 focus:ring-[#0FAE96] placeholder-[#B6B6B6]"
+                placeholder="Your Name"
+                className="w-full px-4 py-3.5 rounded-lg border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-400"
                 value={formData.name}
                 onChange={handleChange}
                 required
               />
             </div>
+
+            {/* Email Input */}
             <div>
-              <label className="block font-medium text-[#B6B6B6] mb-1">
-                Phone No.
-              </label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Your Email"
+                className="w-full px-4 py-3.5 rounded-lg border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-400"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            {/* Phone Input */}
+            <div>
               <input
                 type="tel"
                 name="phoneNumber"
-                placeholder="Phone Number"
-                className="border border-[rgba(255,255,255,0.1)] w-full px-3 py-2 rounded-md bg-[#1A1A2E] text-[#ECF1F0] focus:outline-none focus:ring-2 focus:ring-[#0FAE96] placeholder-[#B6B6B6]"
+                placeholder="Your Phone number"
+                className="w-full px-4 py-3.5 rounded-lg border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-400"
                 value={formData.phoneNumber}
                 onChange={handleChange}
                 required
                 pattern="[0-9]{10}"
               />
             </div>
+
+            {/* Message Textarea */}
             <div>
-              <label className="block font-medium text-[#B6B6B6] mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                className="border border-[rgba(255,255,255,0.1)] w-full inconsciente px-3 py-2 rounded-md bg-[#1A1A2E] text-[#ECF1F0] focus:outline-none focus:ring-2 focus:ring-[#0FAE96] placeholder-[#B6B6B6]"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <label className="block font-medium text-[#B6B6B6] mb-1">
-                Query
-              </label>
               <textarea
                 name="userQuery"
-                placeholder="Your Query"
-                className="border border-[rgba(255,255,255,0.1)] w-full px-3 py-2 rounded-md bg-[#1A1A2E] text-[#ECF1F0] focus:outline-none focus:ring-2 focus:ring-[#0FAE96] placeholder-[#B6B6B6]"
+                placeholder="Message"
+                rows="4"
+                className="w-full px-4 py-3.5 rounded-lg border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-400 resize-none"
                 value={formData.userQuery}
                 onChange={handleChange}
                 required
               />
             </div>
-            <br />
+
+            {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-2 bg-[#0FAE96] text-[#FFFFFF] rounded-md font-raleway font-medium text-base hover:bg-[#0FAE96]/80 transform transition duration-200 hover:scale-105 text-sm sm:text-base"
               disabled={isSubmitting}
+              className="w-full py-4 bg-[#1D4ED8] hover:bg-blue-700 text-white font-bold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Sending..." : "Send Message"}
             </button>
+            
           </form>
         </div>
+
       </div>
     </div>
   );

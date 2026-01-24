@@ -1,3 +1,4 @@
+/** @format */
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -8,7 +9,7 @@ import app from "@/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 import { getDatabase, ref, get } from "firebase/database";
 import defaultProfileImage from "../../public/images/profile.jpeg";
-import { FaUser, FaCog, FaCrown } from "react-icons/fa";
+import { FaUser, FaCog, FaCrown, FaBars, FaTimes, FaChevronDown } from "react-icons/fa";
 import type { User } from "firebase/auth";
 import type { StaticImageData } from "next/image";
 
@@ -21,6 +22,10 @@ const Navbar = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<string | StaticImageData>(defaultProfileImage);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  
+  // State for Tools Dropdown
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
+
   const db = getDatabase(app);
 
   useEffect(() => {
@@ -50,11 +55,9 @@ const Navbar = () => {
 
             if (Name) {
               user = Name;
-              const cleanedName = user.replace(/\s/g, "");
               setFullName(user);
             } else {
               user = fname + " " + lname;
-              const cleanedName = user.replace(/\s/g, "");
               setFullName(user);
             }
 
@@ -87,6 +90,7 @@ const Navbar = () => {
   useEffect(() => {
     setIsMenuOpen(false);
     setIsProfileMenuOpen(false);
+    setIsToolsOpen(false);
   }, [pathname]);
 
   const isActive = (path: string) => pathname === path;
@@ -101,293 +105,295 @@ const Navbar = () => {
     }
   };
 
+  // Colors
+  const primaryBlue = "bg-[#1d4ed8]"; 
+  const primaryBlueHover = "hover:bg-[#1e40af]";
+
   return (
-    <nav className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#11011E] to-[#2A0A3A] text-white py-2 px-4 sm:px-10 flex items-center z-50 shadow-lg shadow-[#ffffff]/20" style={{ minHeight: "56px" }}>
-      {/* Left: Logo (square, no app name) */}
-      <div className="flex items-center flex-shrink-0">
+    <nav 
+      className="fixed top-0 left-0 w-full bg-white border-b border-gray-100 flex items-center z-[100] px-6 sm:px-10 py-2" 
+      style={{ minHeight: "70px" }}
+    >
+      {/* 1. Logo Section */}
+      <div className="flex-shrink-0 cursor-pointer py-1">
         <Link href="/hr">
           <Image
-            src="/images/company_logo.png"
-            alt="Logo"
-            width={38}
-            height={38}
-            className="hover:scale-105 transition-transform duration-200"
+            src="/images/updated-logo.png"
+            alt="JobForm Automator"
+            width={240}
+            height={70}
+            className="h-10 sm:h-14 w-auto object-contain"
+            priority
           />
         </Link>
       </div>
-      {/* Spacer to push menu to the right */}
-      <div className="flex-1" />
-      {/* Right: Menu + Profile/Buttons */}
-      <div className="flex items-center space-x-2 sm:space-x-4">
-        <ul className="hidden sm:flex space-x-7 text-sm sm:text-base font-medium items-center">
-          {[
-            { label: "Home", path: "/hr" },
-            { label: "Short-list Resume", path: "/hr/resumeUpload" },
-            { label: "About", path: "/hr/aboutUs" },
-            { label: "Privacy Policy", path: "/hr/policy" },
-          ].map((item) => (
-            <li
-              key={item.path}
-              className={`px-2 py-1 rounded-md transition duration-200 transform hover:scale-105
-                ${isActive(item.path)
-                  ? "text-[#0FAE96] border-b-2 border-[#0FAE96] pb-1"
-                  : "hover:text-[#0FAE96] hover:bg-[#0FAE96]/20"}
-              `}
-            >
-              <Link href={item.path}>{item.label}</Link>
-            </li>
-          ))}
+
+      {/* Spacer */}
+      <div className="flex-grow"></div>
+
+      {/* 2. Desktop Navigation + Buttons */}
+      <div className="hidden lg:flex items-center space-x-8 xl:space-x-12">
+        
+        {/* Navigation Links */}
+        <ul className="flex items-center space-x-8 text-[16px]">
           <li>
-            <Link href="/">
-              <button className="ml-2 bg-[#23272F] text-white px-4 py-1.5 rounded-full font-semibold shadow-sm border border-[#23272F] hover:bg-[#0FAE96] hover:text-black transition duration-200 text-xs sm:text-sm">
-                Switch Candidate
-              </button>
+            <Link 
+                href="/hr" 
+                className={`font-medium transition-colors ${isActive("/hr") ? "text-black font-bold" : "text-gray-600 hover:text-black"}`}
+            >
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link 
+                href="/hr/aboutUs" 
+                className={`font-medium transition-colors ${isActive("/hr/aboutUs") ? "text-black font-bold" : "text-gray-600 hover:text-black"}`}
+            >
+              About us
+            </Link>
+          </li>
+
+          {/* Tools Dropdown */}
+          <li 
+            className="relative group h-full flex items-center"
+            onMouseEnter={() => setIsToolsOpen(true)}
+            onMouseLeave={() => setIsToolsOpen(false)}
+          >
+            <button className={`flex items-center gap-1 font-medium transition-colors ${isToolsOpen ? "text-black" : "text-gray-600 hover:text-black"}`}>
+              Tools <FaChevronDown size={12} className={`transition-transform duration-200 ${isToolsOpen ? "rotate-180" : ""}`} />
+            </button>
+            
+            {/* Dropdown Content */}
+            <div 
+              className={`absolute top-full left-1/2 transform -translate-x-1/2 pt-4 w-56 transition-all duration-200 ${
+                isToolsOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"
+              }`}
+            >
+                <div className="bg-white border border-gray-100 rounded-xl shadow-xl py-2 overflow-hidden">
+                    <Link href="/hr/resumeUpload" className="block px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        Shortlist Resumes
+                    </Link>
+                    <Link href="/hr/outreach" className="block px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        Automated Outreach
+                    </Link>
+                </div>
+            </div>
+          </li>
+
+          <li>
+            <Link 
+                href="/hr/pricing" 
+                className={`font-medium transition-colors ${isActive("/hr/pricing") ? "text-black font-bold" : "text-gray-600 hover:text-black"}`}
+            >
+              Pricing
+            </Link>
+          </li>
+          <li>
+            <Link 
+                href="/hr/policy" 
+                className={`font-medium transition-colors ${isActive("/hr/policy") ? "text-black font-bold" : "text-gray-600 hover:text-black"}`}
+            >
+              Privacy & Policy
             </Link>
           </li>
         </ul>
-        {/* Profile/Buttons */}
-        {isLogin ? (
-          <div className="relative flex items-center space-x-2">
-            <div className="relative">
-              <Image
-                src={profilePhoto}
-                alt="User Profile"
-                width={36}
-                height={36}
-                className={`rounded-full object-cover transition-transform duration-200 cursor-pointer ${
-                  isPremium ? "border-2 border-yellow-400" : "border-2 border-gray-300"
-                }`}
-                style={{ borderRadius: '50%', objectFit: 'cover', width: '36px', height: '36px' }}
-                onClick={toggleProfileMenu}
-              />
-              {isPremium && (
-                <FaCrown
-                  className="absolute top-0 right-0 w-4 h-4 text-yellow-400 transform translate-x-1/2 -translate-y-1/2"
-                  onClick={toggleProfileMenu}
-                />
-              )}
-            </div>
-            {isProfileMenuOpen && (
-              <div className="absolute top-12 right-0 bg-[#2A0A3A] rounded-md shadow-lg py-2 w-40 z-50">
-                <button
-                  onClick={toggleProfileMenu}
-                  className="absolute top-2 right-2 text-white hover:text-red-500 transition-colors duration-200"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-                <ul className="space-y-1">
-                  <li>
-                    <Link
-                      href="/hr/profile"
-                      className="flex items-center space-x-2 text-white hover:text-[#0FAE96] hover:bg-[#0FAE96]/20 px-4 py-2 rounded-md transition duration-200"
-                      onClick={() => setIsProfileMenuOpen(false)}
-                    >
-                      <FaUser className="w-4 h-4" />
-                      <span>Profile</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => {
-                        handleSettings();
-                        setIsProfileMenuOpen(false);
-                      }}
-                      className="flex items-center space-x-2 text-white hover:text-[#0FAE96] hover:bg-[#0FAE96]/20 px-4 py-2 rounded-md transition duration-200 w-full text-left"
-                    >
-                      <FaCog className="w-4 h-4" />
-                      <span>Settings</span>
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div>
-        ) : (
-          <>
-            <Link href="/hr/login">
-              <button className="text-xs sm:text-sm text-white hover:text-[#0FAE96] hover:bg-[#0FAE96]/20 px-2 py-1 rounded-md transform transition duration-200 hover:scale-105">
-                Login
-              </button>
-            </Link>
-            <Link href="/hr/signUp">
-              <button className="bg-[#0FAE96] text-black px-4 py-1.5 rounded-full hover:bg-[#0FAE96]/80 transform transition duration-200 hover:scale-105 text-xs sm:text-sm font-semibold">
-                Sign Up
-              </button>
-            </Link>
-          </>
-        )}
-      </div>
 
-      <div className="sm:hidden flex items-center">
-        <button
-          onClick={toggleMenu}
-          className="text-[#0FAE96] focus:outline-none focus:ring-2 focus:ring-[#0FAE96] rounded"
-        >
-          <svg
-            className={`w-6 h-6 transform transition-transform duration-300 ${
-              isMenuOpen ? "rotate-45" : ""
-            }`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d={
-                isMenuOpen
-                  ? "M6 18L18 6M6 6l12 12"
-                  : "M4 6h16M4 12h16m-7 6h7"
-              }
-            />
-          </svg>
-        </button>
-      </div>
+        {/* Buttons */}
+        <div className="flex items-center space-x-4">
+          <Link href="/">
+            <button className={`${primaryBlue} text-white px-5 py-2.5 rounded-full font-medium text-sm transition shadow-sm ${primaryBlueHover}`}>
+              Switch to candidate
+            </button>
+          </Link>
 
-      {isMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsMenuOpen(false)}
-        ></div>
-      )}
-
-      <div
-        className={`sm:hidden fixed top-0 left-0 w-4/5 h-full bg-[#11011E] py-6 px-6 shadow-lg z-50 transform transition-transform duration-300 ${
-          isMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <ul className="space-y-6 text-base">
-          {[
-            { label: "Home", path: "/hr" },
-            { label: "Short-list Resume", path: "/hr/resumeUpload" },
-            { label: "About", path: "/hr/aboutUs" },
-            { label: "Privacy Policy", path: "/hr/policy" },
-          ].map((item) => (
-            <li
-              key={item.path}
-              className={`${
-                isActive(item.path)
-                  ? "text-[#0FAE96] border-l-4 border-[#0FAE96]"
-                  : "hover:text-[#0FAE96] hover:bg-[#0FAE96]/20"
-              } px-2 py-1 rounded-md transition duration-200 transform hover:scale-105`}
-            >
-              <Link
-                href={item.path}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsMenuOpen(false);
-                }}
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
-          <li>
-            <Link href="/">
-              <button className="bg-[#23272F] text-white px-4 py-1.5 rounded-full font-semibold shadow-sm border border-[#23272F] hover:bg-[#0FAE96] hover:text-black transition duration-200 text-xs sm:text-sm">
-                Switch Candidate
-              </button>
-            </Link>
-          </li>
-          {isLogin ? (
+          {!isLogin ? (
             <>
-              <li className="flex items-center space-x-2">
-                <div className="relative">
-                  <Image
-                    src={profilePhoto}
-                    alt="User Profile"
-                    width={40}
-                    height={40}
-                    className={`rounded-full object-cover ${
-                      isPremium ? "border-2 border-yellow-400" : "border-2 border-gray-300"
-                    } hover:scale-110 transition-transform duration-200 cursor-pointer`}
-                    style={{ borderRadius: '50%', objectFit: 'cover', width: '40px', height: '40px' }}
-                    onClick={toggleProfileMenu}
-                  />
-                  {isPremium && (
-                    <FaCrown
-                      className="absolute top-0 right-0 w-4 h-4 text-yellow-400 transform translate-x-1/2 -translate-y-1/2"
-                      onClick={toggleProfileMenu}
-                    />
-                  )}
-                </div>
-                <span className="text-[#0FAE96]">{fullName}</span>
-              </li>
+              <Link href="/hr/login">
+                <button className="bg-white text-black border-2 border-[#1d4ed8] px-6 py-2.5 rounded-full font-medium text-sm hover:bg-blue-50 transition">
+                  Sign in
+                </button>
+              </Link>
+              <Link href="/hr/signUp">
+                <button className={`${primaryBlue} text-white px-6 py-2.5 rounded-full font-medium text-sm transition shadow-sm ${primaryBlueHover}`}>
+                  Sign up
+                </button>
+              </Link>
+            </>
+          ) : (
+            /* Logged In User Profile */
+            <div className="relative ml-2">
+              <div 
+                className="relative cursor-pointer hover:opacity-90 transition-opacity" 
+                onClick={toggleProfileMenu}
+              >
+                <Image
+                  src={profilePhoto}
+                  alt="Profile"
+                  width={44}
+                  height={44}
+                  className={`rounded-full object-cover ${
+                    isPremium ? "border-2 border-yellow-400" : "border border-gray-200"
+                  }`}
+                  style={{ width: '44px', height: '44px' }}
+                />
+                 {isPremium && (
+                  <FaCrown className="absolute -top-1 -right-1 w-3.5 h-3.5 text-yellow-500 bg-white rounded-full p-0.5 shadow-sm" />
+                )}
+              </div>
+              
+              {/* Profile Dropdown */}
               {isProfileMenuOpen && (
-                <div className="mt-4 bg-[#2A0A3A] rounded-md shadow-lg py-2 px-4 relative">
-                  <button
-                    onClick={toggleProfileMenu}
-                    className="absolute top-2 right-2 text-white hover:text-red-500 transition-colors duration-200"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                  <ul className="space-y-2">
+                <div className="absolute top-14 right-0 bg-white border border-gray-100 rounded-xl shadow-xl py-2 w-52 z-50">
+                  <div className="px-4 py-3 border-b border-gray-50 mb-1">
+                    <p className="text-sm font-bold text-gray-900 truncate">{fullName || "HR User"}</p>
+                  </div>
+                  <ul className="space-y-1">
                     <li>
                       <Link
                         href="/hr/profile"
-                        className="flex items-center space-x-2 text-white hover:text-[#0FAE96] hover:bg-[#0FAE96]/20 px-2 py-1 rounded-md transition duration-200"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          setIsProfileMenuOpen(false);
-                        }}
+                        className="flex items-center px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 font-medium"
+                        onClick={() => setIsProfileMenuOpen(false)}
                       >
-                        <FaUser className="w-4 h-4" />
-                        <span>Profile</span>
+                        <FaUser className="mr-3 text-gray-400" /> Profile
                       </Link>
                     </li>
                     <li>
                       <button
                         onClick={() => {
                           handleSettings();
-                          setIsMenuOpen(false);
                           setIsProfileMenuOpen(false);
                         }}
-                        className="flex items-center space-x-2 text-white hover:text-[#0FAE96] hover:bg-[#0FAE96]/20 px-2 py-1 rounded-md transition duration-200 w-full text-left"
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 font-medium"
                       >
-                        <FaCog className="w-4 h-4" />
-                        <span>Settings</span>
+                        <FaCog className="mr-3 text-gray-400" /> Settings
                       </button>
                     </li>
                   </ul>
+                  <div className="border-t border-gray-50 mt-2 pt-2">
+                    <button 
+                        onClick={async () => {
+                            await auth.signOut();
+                            window.location.href = "/hr/login";
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 font-medium"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
                 </div>
               )}
-            </>
-          ) : (
-            <li className="hover:text-[#0FAE96] transition duration-200 transform hover:scale-105">
-              <Link href="/hr/login" onClick={() => setIsMenuOpen(false)}>
-                Login / Sign Up
-              </Link>
-            </li>
+            </div>
           )}
-        </ul>
+        </div>
+      </div>
+
+      {/* 3. Mobile Toggle */}
+      <div className="lg:hidden ml-auto">
+        <button
+          onClick={toggleMenu}
+          className="text-gray-800 focus:outline-none p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+        </button>
+      </div>
+
+      {/* Mobile Drawer */}
+      {isMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-40 lg:hidden backdrop-blur-sm"
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
+
+      <div
+        className={`fixed top-0 right-0 w-[85%] max-w-sm h-full bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
+          isMenuOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="flex flex-col h-full p-6">
+          <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
+             <div className="w-36">
+                <Image 
+                    src="/images/updated-logo.png"
+                    alt="Logo" 
+                    width={140} 
+                    height={50} 
+                    className="object-contain" 
+                />
+             </div>
+            <button onClick={() => setIsMenuOpen(false)} className="text-gray-400 hover:text-black transition-colors">
+              <FaTimes size={24} />
+            </button>
+          </div>
+
+          <ul className="space-y-2 flex-1">
+            <li>
+                <Link href="/hr" onClick={() => setIsMenuOpen(false)} className={`block px-4 py-3 rounded-xl text-lg ${isActive("/hr") ? "bg-blue-50 text-blue-700 font-bold" : "text-gray-600 hover:bg-gray-50"}`}>
+                    Home
+                </Link>
+            </li>
+            <li>
+                <Link href="/hr/aboutUs" onClick={() => setIsMenuOpen(false)} className={`block px-4 py-3 rounded-xl text-lg ${isActive("/hr/aboutUs") ? "bg-blue-50 text-blue-700 font-bold" : "text-gray-600 hover:bg-gray-50"}`}>
+                    About us
+                </Link>
+            </li>
+            
+            {/* Mobile Tools Dropdown Simpler View */}
+            <li className="px-4 py-2 bg-gray-50 rounded-xl my-2">
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Tools</p>
+                <Link href="/hr/resumeUpload" onClick={() => setIsMenuOpen(false)} className="block py-2 text-base text-gray-700 font-medium hover:text-blue-600">
+                    Shortlist Resumes
+                </Link>
+                <Link href="/hr/outreach" onClick={() => setIsMenuOpen(false)} className="block py-2 text-base text-gray-700 font-medium hover:text-blue-600">
+                    Automated Outreach
+                </Link>
+            </li>
+
+            <li>
+                <Link href="/hr/pricing" onClick={() => setIsMenuOpen(false)} className={`block px-4 py-3 rounded-xl text-lg ${isActive("/hr/pricing") ? "bg-blue-50 text-blue-700 font-bold" : "text-gray-600 hover:bg-gray-50"}`}>
+                    Pricing
+                </Link>
+            </li>
+            <li>
+                <Link href="/hr/policy" onClick={() => setIsMenuOpen(false)} className={`block px-4 py-3 rounded-xl text-lg ${isActive("/hr/policy") ? "bg-blue-50 text-blue-700 font-bold" : "text-gray-600 hover:bg-gray-50"}`}>
+                    Privacy & Policy
+                </Link>
+            </li>
+          </ul>
+
+          <div className="mt-auto space-y-3 pt-6 border-t border-gray-100">
+             <Link href="/" onClick={() => setIsMenuOpen(false)}>
+                <button className="w-full bg-[#1d4ed8] text-white py-3.5 rounded-xl font-bold mb-3 hover:bg-blue-800 transition-colors shadow-sm">
+                  Switch to candidate
+                </button>
+             </Link>
+
+            {!isLogin ? (
+                <div className="flex flex-col gap-3">
+                    <Link href="/hr/login" onClick={() => setIsMenuOpen(false)}>
+                        <button className="w-full border-2 border-gray-200 text-gray-700 py-3.5 rounded-xl font-bold hover:bg-gray-50 transition-colors">
+                        Sign In
+                        </button>
+                    </Link>
+                    <Link href="/hr/signUp" onClick={() => setIsMenuOpen(false)}>
+                        <button className="w-full bg-[#1d4ed8] text-white py-3.5 rounded-xl font-bold shadow-lg hover:bg-blue-800 transition-colors">
+                        Sign Up
+                        </button>
+                    </Link>
+                </div>
+            ) : (
+                 <Link href="/hr/profile" onClick={() => setIsMenuOpen(false)}>
+                    <div className="flex items-center p-3 bg-gray-50 rounded-xl border border-gray-200 shadow-sm">
+                        <Image src={profilePhoto} alt="Profile" width={48} height={48} className="rounded-full" />
+                        <div className="ml-3">
+                            <p className="font-bold text-gray-900 text-lg">{fullName || "HR User"}</p>
+                            <p className="text-sm text-blue-600 font-medium">View Profile</p>
+                        </div>
+                    </div>
+                </Link>
+            )}
+          </div>
+        </div>
       </div>
     </nav>
   );

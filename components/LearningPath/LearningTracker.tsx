@@ -31,9 +31,8 @@ const LearningTracker: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
-    // ==== Load Gemini API key (following your other pages convention) ====
+    // ==== Load Gemini API key ====
     useEffect(() => {
-        // For this project we use 'api_key' in localStorage (your analysisService)
         const keyFromLocal = localStorage.getItem("api_key");
         if (!keyFromLocal) {
             console.warn("No Gemini API key found in localStorage (api_key).");
@@ -41,7 +40,7 @@ const LearningTracker: React.FC = () => {
         setApiKey(keyFromLocal);
     }, []);
 
-    // ==== Gemini client (same style as CreateResume) ====
+    // ==== Gemini client ====
     const geminiClient = useMemo(() => {
         if (!apiKey) return null;
         try {
@@ -82,7 +81,7 @@ const LearningTracker: React.FC = () => {
         [db]
     );
 
-    // ==== Gemini: generate breakdown (sub-skills) for a skill ====
+    // ==== Gemini: generate breakdown ====
     const generateBreakdownForAllSkills = useCallback(
         async (skills: string[]): Promise<TrackerData> => {
             if (!geminiClient || skills.length === 0) return {};
@@ -90,9 +89,7 @@ const LearningTracker: React.FC = () => {
             try {
                 const prompt = `
 You are helping a student prepare for job interviews.
-
 For EACH skill below, generate 6–7 important sub-skills.
-
 Rules:
 - ONLY sub-skills
 - Short topic names
@@ -113,14 +110,11 @@ Return format:
                 });
 
                 const response = await model.generateContent(prompt);
-                const text =
-                    response?.response?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
+                const text = response?.response?.candidates?.[0]?.content?.parts?.[0]?.text || "";
                 const jsonMatch = text.match(/{[\s\S]*}/);
                 if (!jsonMatch) throw new Error("Invalid Gemini response");
 
                 const parsed = JSON.parse(jsonMatch[0]);
-
                 const result: TrackerData = {};
                 Object.keys(parsed).forEach((skill) => {
                     result[skill] = parsed[skill].map((t: string) => ({
@@ -132,8 +126,6 @@ Return format:
                 return result;
             } catch (err) {
                 console.error("Gemini error:", err);
-
-                // fallback (quota-safe)
                 const fallback: TrackerData = {};
                 skills.forEach((s) => {
                     fallback[s] = [
@@ -147,12 +139,11 @@ Return format:
         [geminiClient]
     );
 
-    // ==== Main effect: load tracker (and call Gemini if needed) ====
+    // ==== Main effect: load tracker ====
     useEffect(() => {
         const bootstrap = async () => {
             const uid = auth.currentUser?.uid;
             if (!uid) {
-                console.warn("No authenticated user found for LearningTracker");
                 setIsLoading(false);
                 return;
             }
@@ -165,11 +156,7 @@ Return format:
 
             setIsLoading(true);
             try {
-                // 1. Load existing tracker from Firebase
                 let trackerData: TrackerData = await loadTrackerFromFirebase(uid);
-
-                // 2. Ensure each missingSkill has breakdown entries
-                let updated = false;
                 const skillsToGenerate = missingSkills.filter(
                     (skill) => !trackerData[skill] || !Array.isArray(trackerData[skill])
                 );
@@ -177,11 +164,9 @@ Return format:
                 if (skillsToGenerate.length > 0) {
                     const generated = await generateBreakdownForAllSkills(skillsToGenerate);
                     trackerData = { ...trackerData, ...generated };
-
                     await saveTrackerToFirebase(uid, trackerData);
                 }
 
-                // 3. Optionally remove skills that are no longer missing
                 const trackerSkills = Object.keys(trackerData);
                 let removed = false;
                 for (const skillName of trackerSkills) {
@@ -191,7 +176,7 @@ Return format:
                     }
                 }
 
-                if (updated || removed) {
+                if (removed) {
                     await saveTrackerToFirebase(uid, trackerData);
                 }
 
@@ -205,7 +190,6 @@ Return format:
         };
 
         bootstrap();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [auth.currentUser, missingSkills, loadTrackerFromFirebase, saveTrackerToFirebase, generateBreakdownForAllSkills]);
 
     // ==== Toggle a checklist item ====
@@ -214,13 +198,9 @@ Return format:
         if (!uid) return;
 
         setTracker((prev) => {
-            const copy: TrackerData = structuredClone
-                ? structuredClone(prev)
-                : JSON.parse(JSON.stringify(prev));
-
+            const copy: TrackerData = structuredClone ? structuredClone(prev) : JSON.parse(JSON.stringify(prev));
             const items = copy[skillName];
             if (!items || !items[index]) return prev;
-
             items[index].done = !items[index].done;
             return copy;
         });
@@ -235,7 +215,7 @@ Return format:
             });
         } catch (e) {
             console.error("Error updating tracker item:", e);
-            toast.error("Failed to update tracker. Please try again.");
+            toast.error("Failed to update tracker.");
         } finally {
             setIsSyncing(false);
         }
@@ -244,11 +224,11 @@ Return format:
     // ==== UI ====
     if (isLoading) {
         return (
-            <div className="flex flex-col bg-[#11011E]">
-                <Card className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-5">
+            <div className="flex flex-col bg-slate-50">
+                <Card className="bg-white border-slate-200 rounded-xl p-5 shadow-sm">
                     <CardContent className="flex items-center justify-center py-8">
-                        <Loader2 className="h-6 w-6 animate-spin text-[#0FAE96]" />
-                        <span className="ml-2 text-sm text-[#B6B6B6] font-inter">
+                        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                        <span className="ml-2 text-sm text-slate-600 font-inter font-medium">
                             Building your learning tracker...
                         </span>
                     </CardContent>
@@ -257,22 +237,21 @@ Return format:
         );
     }
 
-    // Maintain original missingSkills order
     const skillNames = missingSkills.filter((skill) => tracker[skill]);
 
     if (skillNames.length === 0) {
         return (
-            <div className="flex flex-col bg-[#11011E]">
-                <Card className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-5">
+            <div className="flex flex-col bg-slate-50">
+                <Card className="bg-white border-slate-200 rounded-xl p-5 shadow-sm">
                     <CardHeader>
-                        <CardTitle className="text-xl font-raleway font-bold text-[#ECF1F0] flex items-center gap-2">
-                            <ListChecks className="h-5 w-5 text-[#0FAE96]" />
+                        <CardTitle className="text-xl font-raleway font-bold text-slate-900 flex items-center gap-2">
+                            <ListChecks className="h-5 w-5 text-blue-600" />
                             Learning Tracker
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-[#B6B6B6] font-inter">
-                            Please wait...
+                        <p className="text-sm text-slate-500 font-inter">
+                            No skills currently tracked.
                         </p>
                     </CardContent>
                 </Card>
@@ -281,15 +260,15 @@ Return format:
     }
 
     return (
-        <div className="flex flex-col bg-[#11011E]">
-            <Card className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-5">
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-xl font-raleway font-bold text-[#ECF1F0] flex items-center gap-2">
-                        <ListChecks className="h-5 w-5 text-[#0FAE96]" />
+        <div className="flex flex-col bg-slate-50">
+            <Card className="bg-white border-slate-200 rounded-xl p-5 shadow-sm">
+                <CardHeader className="pb-3 px-0">
+                    <CardTitle className="text-xl font-raleway font-bold text-slate-900 flex items-center gap-2">
+                        <ListChecks className="h-5 w-5 text-blue-600" />
                         Learning Tracker
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-5">
+                <CardContent className="space-y-5 px-0">
                     {skillNames.map((skillName) => {
                         const items = tracker[skillName] || [];
                         const completedCount = items.filter((i) => i.done).length;
@@ -297,34 +276,32 @@ Return format:
                         return (
                             <div
                                 key={skillName}
-                                className="border border-[rgba(255,255,255,0.05)] rounded-md p-4"
+                                className="border border-slate-100 bg-slate-50/50 rounded-lg p-4"
                             >
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-[#ECF1F0] font-raleway font-semibold text-base">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="text-slate-900 font-raleway font-bold text-base">
                                         {skillName}
                                     </h3>
-                                    <span className="text-xs text-[#B6B6B6] font-inter">
-                                        {completedCount}/{items.length} steps done
+                                    <span className="text-xs text-slate-500 font-inter font-medium px-2 py-1 bg-white border border-slate-200 rounded-full">
+                                        {completedCount}/{items.length} steps
                                     </span>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     {items.map((item, index) => (
                                         <div
                                             key={index}
-                                            className="flex items-start gap-2 text-sm text-[#B6B6B6] font-inter"
+                                            className="flex items-start gap-3 text-sm font-inter"
                                         >
                                             <Checkbox
                                                 checked={item.done}
-                                                onCheckedChange={() =>
-                                                    handleToggleItem(skillName, index)
-                                                }
-                                                className="mt-0.5"
+                                                onCheckedChange={() => handleToggleItem(skillName, index)}
+                                                className="mt-0.5 border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                                             />
                                             <span
                                                 className={
                                                     item.done
-                                                        ? "line-through text-[#0FAE96]"
-                                                        : "text-[#B6B6B6]"
+                                                        ? "line-through text-blue-600 font-medium"
+                                                        : "text-slate-700"
                                                 }
                                             >
                                                 {item.title}
@@ -337,7 +314,8 @@ Return format:
                     })}
 
                     {isSyncing && (
-                        <div className="text-xs text-[#B6B6B6] font-inter mt-2">
+                        <div className="flex items-center gap-2 text-xs text-blue-600 font-inter font-medium mt-2">
+                            <Loader2 className="h-3 w-3 animate-spin" />
                             Syncing your progress...
                         </div>
                     )}

@@ -27,6 +27,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,6 +36,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const hideNavAndFooter = pathname === "/atsresume/createresume";
   const isHRPage = pathname.startsWith("/hr");
+  const isDashboardPage = pathname.includes("/dashboard");
   const paddingClass = hideNavAndFooter ? "pt-1" : "pt-16";
 
   return (
@@ -51,7 +53,7 @@ export default function RootLayout({
               <Sonner />
               {!hideNavAndFooter && (isHRPage ? <HRNavbar /> : <Navbar />)}
               <main className={paddingClass}>{children}</main>
-              {!hideNavAndFooter && (isHRPage ? <HRFooter /> : <Footer />)}
+              {!hideNavAndFooter && !isDashboardPage && (isHRPage ? <HRFooter /> : <Footer />)}
             </AppProvider>
           </TooltipProvider>
         </TanstackProvider>
